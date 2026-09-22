@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Chi tiết bài viết — CAA</title>
+  
+  <link rel="stylesheet" href="assets/css/tokens.min.css" />
+  <link rel="stylesheet" href="assets/css/styles.min.css" />
+  <style>
+    .article-detail {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--s-lg) 0 var(--s-4xl);
+    }
+    .article-meta {
+        margin-bottom: var(--s-md);
+        color: var(--c-ink-2);
+    }
+    .article-title {
+        font-size: var(--t-3xl);
+        font-weight: 800;
+        margin-bottom: var(--s-xl);
+        line-height: 1.2;
+    }
+    .article-sapo {
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin-bottom: var(--s-2xl);
+        color: var(--c-ink);
+        line-height: 1.6;
+    }
+    .article-hero-img {
+        width: 100%;
+        height: auto;
+        border-radius: var(--r-lg);
+        margin-bottom: var(--s-2xl);
+    }
+    .article-body {
+        
+        font-size: 1.125rem; /* 18px for professional readability */
+        line-height: 1.75;
+        color: var(--c-ink-1);
+    }
+    .article-body p {
+        margin-bottom: var(--s-lg);
+        text-align: justify;
+    }
+    .article-body img {
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--r-md);
+        display: block;
+        margin: var(--s-xl) auto;
+    }
+    .article-body figure {
+        margin-block: var(--s-2xl);
+        text-align: center;
+    }
+    .article-body figcaption {
+        font-size: var(--t-sm);
+        color: var(--c-ink-3);
+        margin-top: var(--s-sm);
+        font-style: italic;
+    }
+    .article-body h2, .article-body h3, .article-body h4 {
+        margin-top: var(--s-2xl);
+        margin-bottom: var(--s-md);
+        color: var(--c-ink);
+        font-weight: 700;
+        line-height: 1.3;
+    }
+    .article-body h2 {
+        font-size: var(--t-2xl);
+    }
+    .article-body h3 {
+        font-size: var(--t-xl);
+    }
+    .article-body ul, .article-body ol {
+        margin-bottom: var(--s-lg);
+        padding-left: var(--s-xl);
+    }
+    .article-body li {
+        margin-bottom: var(--s-sm);
+    }
+    .article-body a {
+        color: var(--c-red);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+    .article-body a:hover {
+        color: var(--c-red-hover);
+    }
+    
+    
+    /* Clean up imported styles from sources */
+    .article-body .sc-longform-header { display: none; }
+    .article-body h1, .article-body .entry-title { display: none; }
+    .article-body .block-sc-author-info { display: none; }
+    .article-body .entry-header { display: none; }
+    .article-body .sc-detail-comment { display: none; }
+    .article-body .sc-detail-tag { display: none; }
+  </style>
+</head>
+<body class="page-layout">
+<header class="nav" id="site-nav" data-nav>
+    <div class="nav-inner page-wrap">
+      <!-- Logo -->
+      <a class="nav-brand" href="index.html" aria-label="Chi hội Quảng cáo Thủ đô">
+        <span class="brand-logo" aria-hidden="true">CAA</span>
+        <span class="brand-name">
+          <strong>Chi hội Quảng cáo Thủ đô</strong>
+          <span class="brand-sub">Trực thuộc VAA</span>
+        </span>
+      </a>
+
+      <!-- Desktop Nav -->
+      <nav class="nav-links" aria-label="Điều hướng chính">
+        <button class="nav-link" type="button" data-mega="about" aria-expanded="false" aria-haspopup="true">Chi hội ▾</button>
+        <button class="nav-link" type="button" data-mega="members" aria-expanded="false" aria-haspopup="true">Hội viên ▾</button>
+        <button class="nav-link" type="button" data-mega="events" aria-expanded="false" aria-haspopup="true">Sự kiện ▾</button>
+        <a class="nav-link" href="news.html">Tin tức</a>
+        <a class="nav-link" href="contact.html">Liên hệ</a>
+      </nav>
+
+      <!-- Nav End -->
+      <div class="nav-end">
+        <button class="search-btn btn btn-ghost btn-icon" type="button" aria-label="Tìm kiếm" data-open-search>🔍</button>
+        <button class="login-btn btn btn-ghost btn-sm" type="button" data-open-login>Đăng nhập</button>
+        <a class="btn btn-primary btn-sm join-btn" href="join.html">Gia nhập CAA</a>
+        <button class="mobile-toggle btn btn-ghost btn-icon" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-drawer">☰</button>
+      </div>
+    </div>
+
+    <!-- Mega: Chi hội -->
+    <div class="mega" data-mega-panel="about" hidden>
+      <div class="mega-inner page-wrap">
+        <div class="mega-col">
+          <p class="mega-col-head">Tổ chức</p>
+          <a class="mega-item" href="about.html">
+            <span class="mega-item-icon">LS</span>
+            <span><strong>Lịch sử CAA</strong><small>Ra mắt 2022 · Đại hội II 2026</small></span>
+          </a>
+          <a class="mega-item" href="about.html#leadership">
+            <span class="mega-item-icon">BCH</span>
+            <span><strong>Ban Chấp hành</strong><small>Lãnh đạo nhiệm kỳ 2026–2028</small></span>
+          </a>
+          <a class="mega-item" href="about.html#mission">
+            <span class="mega-item-icon">SM</span>
+            <span><strong>Sứ mệnh & Tầm nhìn</strong><small>Ba trụ cột hoạt động</small></span>
+          </a>
+        </div>
+        <div class="mega-col">
+          <p class="mega-col-head">Hoạt động</p>
+          <a class="mega-item" href="news.html">
+            <span class="mega-item-icon">TN</span>
+            <span><strong>Tin Chi hội</strong><small>Hoạt động, phong trào, hội thảo</small></span>
+          </a>
+          <a class="mega-item" href="events.html">
+            <span class="mega-item-icon">SK</span>
+            <span><strong>Sự kiện nổi bật</strong><small>Pickleball, Gala, Đại hội</small></span>
+          </a>
+        </div>
+        <div class="mega-feature">
+          <strong>Đại hội lần II · 2026–2028</strong>
+          <span>Nhiệm kỳ mới với trọng tâm chuyển đổi số và mở rộng mạng lưới hội viên B2B.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mega: Hội viên -->
+    <div class="mega" data-mega-panel="members" hidden>
+      <div class="mega-inner page-wrap">
+        <div class="mega-col">
+          <p class="mega-col-head">Danh bạ</p>
+          <a class="mega-item" href="directory.html">
+            <span class="mega-item-icon">B2B</span>
+            <span><strong>Danh bạ B2B</strong><small>Lọc theo OOH, Digital, In ấn, Event</small></span>
+          </a>
+          <a class="mega-item" href="portal.html">
+            <span class="mega-item-icon">ID</span>
+            <span><strong>Khu hội viên</strong><small>Dashboard, hồ sơ, tài liệu nội bộ</small></span>
+          </a>
+        </div>
+        <div class="mega-col">
+          <p class="mega-col-head">Gia nhập</p>
+          <a class="mega-item" href="join.html">
+            <span class="mega-item-icon">GN</span>
+            <span><strong>Đăng ký hội viên</strong><small>Form nhiều bước, tự chuyển khi hợp lệ</small></span>
+          </a>
+          <a class="mega-item" href="join.html#benefits">
+            <span class="mega-item-icon">QL</span>
+            <span><strong>Quyền lợi hội viên</strong><small>6 nhóm quyền lợi thiết thực</small></span>
+          </a>
+        </div>
+        <div class="mega-feature">
+          <strong>Danh bạ B2B nội khối</strong>
+          <span>Hội viên đăng nhập để xem thông tin liên hệ đầy đủ và gửi yêu cầu kết nối đối tác.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mega: Sự kiện -->
+    <div class="mega" data-mega-panel="events" hidden>
+      <div class="mega-inner page-wrap">
+        <div class="mega-col">
+          <p class="mega-col-head">Sự kiện</p>
+          <a class="mega-item" href="events.html">
+            <span class="mega-item-icon">LCH</span>
+            <span><strong>Lịch sự kiện</strong><small>Hội thảo, Đại hội, Gala, Pickleball</small></span>
+          </a>
+          <a class="mega-item" href="events.html#checkin">
+            <span class="mega-item-icon">QR</span>
+            <span><strong>QR Check-in</strong><small>Mô phỏng check-in tại sự kiện</small></span>
+          </a>
+        </div>
+        <div class="mega-col">
+          <p class="mega-col-head">Sau sự kiện</p>
+          <a class="mega-item" href="news.html">
+            <span class="mega-item-icon">ALB</span>
+            <span><strong>Album hoạt động</strong><small>Hình ảnh và nội dung sau sự kiện</small></span>
+          </a>
+          <a class="mega-item" href="docs.html">
+            <span class="mega-item-icon">TL</span>
+            <span><strong>Tài liệu sự kiện</strong><small>Slide, video, tài liệu tham khảo</small></span>
+          </a>
+        </div>
+        <div class="mega-feature">
+          <strong>QR Check-in thông minh</strong>
+          <span>Mỗi đăng ký nhận mã QR riêng. Event Staff quét mã, hệ thống ghi nhận và audit log.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer" id="mobile-drawer" hidden>
+        <nav aria-label="Menu di động">
+          <details class="mobile-nav-group">
+            <summary>Chi hội</summary>
+            <div class="mobile-nav-sub">
+              <a href="about.html">Lịch sử CAA</a>
+              <a href="about.html#leadership">Ban Chấp hành</a>
+              <a href="about.html#mission">Sứ mệnh & Tầm nhìn</a>
+            </div>
+          </details>
+          <details class="mobile-nav-group">
+            <summary>Hội viên</summary>
+            <div class="mobile-nav-sub">
+              <a href="directory.html">Danh bạ B2B</a>
+              <a href="join.html">Gia nhập CAA</a>
+              <a href="join.html#benefits">Quyền lợi hội viên</a>
+              <a href="portal.html">Khu vực nội bộ</a>
+            </div>
+          </details>
+          <details class="mobile-nav-group">
+            <summary>Hoạt động & Sự kiện</summary>
+            <div class="mobile-nav-sub">
+              <a href="events.html">Sự kiện nổi bật</a>
+              <a href="news.html">Tin tức Chi hội</a>
+              <a href="docs.html">Tài liệu chuyên ngành</a>
+            </div>
+          </details>
+          <a href="contact.html">Liên hệ Ban thư ký</a>
+          <button type="button" data-open-login class="btn btn-secondary btn-wide" style="margin-top: 1rem;">Đăng nhập</button>
+        </nav>
+      </div>
+  </header>
+  <div class="nav-scrim" data-scrim hidden></div>
+
+  <main id="main">
+    <section>
+      <div class="page-wrap">
+        <div class="article-detail" id="article-container">
+            <p>Đang tải bài viết...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="footer">
+    <div class="footer-inner page-wrap">
+      <div class="footer-brand">
+        <p class="footer-wordmark">CAA</p>
+        <p class="footer-tagline">Chi hội Quảng cáo Thủ đô — Cổng thông tin hội viên và kết nối B2B ngành quảng cáo Hà Nội.</p>
+      </div>
+      <nav class="footer-nav-col" aria-label="Về Chi hội">
+        <p class="footer-nav-head">Chi hội</p>
+        <a href="about.html">Giới thiệu CAA</a>
+        <a href="about.html#leadership">Ban Chấp hành</a>
+        <a href="about.html#mission">Sứ mệnh & Tầm nhìn</a>
+        <a href="news.html">Tin tức</a>
+      </nav>
+      <nav class="footer-nav-col" aria-label="Hội viên">
+        <p class="footer-nav-head">Hội viên</p>
+        <a href="directory.html">Danh bạ B2B</a>
+        <a href="join.html">Gia nhập CAA</a>
+        <a href="join.html#benefits">Quyền lợi</a>
+        <a href="portal.html">Khu hội viên</a>
+      </nav>
+      <nav class="footer-nav-col" aria-label="Hoạt động">
+        <p class="footer-nav-head">Hoạt động</p>
+        <a href="events.html">Sự kiện</a>
+        <a href="docs.html">Tài liệu</a>
+        <a href="events.html#checkin">QR Check-in</a>
+        <a href="contact.html">Liên hệ</a>
+      </nav>
+        <nav class="footer-nav-col" aria-label="Kết nối với chúng tôi">
+          <p class="footer-nav-head">Kết nối với chúng tôi</p>
+          <div style="display: flex; gap: var(--s-md); margin-top: var(--s-xs);">
+            <a href="#" aria-label="Facebook" style="display: inline-flex; color: #e3e0db;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            <a href="#" aria-label="Instagram" style="display: inline-flex; color: #e3e0db;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="#" aria-label="TikTok" style="display: inline-flex; color: #e3e0db;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+            </a>
+            <a href="#" aria-label="Zalo" style="display: inline-flex; color: #e3e0db; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; border: 2px solid currentColor; border-radius: 4px; padding: 0 4px; height: 24px;">
+              Zalo
+            </a>
+          </div>
+        </nav>
+    </div>
+    <div class="footer-bottom page-wrap">
+      <span>© 2026 Chi hội Quảng cáo Thủ đô · Trực thuộc VAA</span>
+      <span class="footer-note">Nội dung lãnh đạo, hội viên và số liệu cần CAA xác minh trước khi phát hành chính thức.</span>
+    </div>
+  </footer>
+
+  <script src="assets/js/articles_data.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        const container = document.getElementById('article-container');
+        
+        if (!ARTICLES) {
+            container.innerHTML = '<p>Lỗi tải dữ liệu bài viết.</p>';
+            return;
+        }
+        
+        const article = ARTICLES.find(a => a.id === id) || ARTICLES[0]; // default to first if not found
+        
+        if (article) {
+            document.title = article.title + " — CAA";
+            
+            // Render
+            let contentHtml = article.content;
+            
+            container.innerHTML = `
+                <a href="news.html" class="btn btn-ghost btn-sm" style="margin-bottom: var(--s-lg);">← Quay lại Tin tức</a>
+                <h1 class="article-title">${article.title}</h1>
+                <div class="article-meta" style="display: flex; gap: var(--s-sm); align-items: center; margin-bottom: var(--s-xl); color: var(--c-ink-3); font-size: var(--t-sm);">
+                    <span><strong>Theo CAA News</strong></span>
+                    <span>&bull;</span>
+                    <span>16/09/2026</span>
+                </div>
+                <p class="article-sapo">${article.description}</p>
+                ${article.image ? `<img src="${article.image}" alt="${article.title}" class="article-hero-img" />` : ''}
+                <div class="article-body">
+                    ${contentHtml}
+                </div>
+            `;
+        } else {
+            container.innerHTML = '<p>Không tìm thấy bài viết.</p>';
+        }
+    });
+  </script>
+
+<!-- Floating Contact Widget -->
+<div class="floating-contact" id="floating-contact">
+  <div class="fc-menu">
+    <a href="#" class="fc-item" aria-label="Facebook" style="color: #1877F2;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+    </a>
+    <a href="#" class="fc-item" aria-label="Instagram" style="color: #E4405F;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+    </a>
+    <a href="#" class="fc-item" aria-label="Zalo" style="color: #0068FF;">
+      <span style="font-weight: 700; font-size: 13px; font-family: sans-serif; letter-spacing: 0.5px;">Zalo</span>
+    </a>
+    <a href="mailto:banthuky@caa.org.vn" class="fc-item" aria-label="Email" style="color: var(--c-red);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+    </a>
+  </div>
+  <button class="fc-toggle" aria-label="Liên hệ">
+    <div class="fc-ripple"></div>
+    <svg class="fc-icon-chat" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+    <svg class="fc-icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+  </button>
+</div>
+</body>
+</html>

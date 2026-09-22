@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAA CMS - Hệ thống Quản trị</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/styles.min.css" />
+  <style>
+    body { background: var(--c-bg-2); margin: 0; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
+    .cms-sidebar { width: 280px; background: var(--c-ink); color: white; display: flex; flex-direction: column; }
+    .cms-brand { padding: 1.5rem; font-size: 1.25rem; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .cms-menu { flex: 1; padding: 1rem 0; overflow-y: auto; }
+    .cms-menu-item { padding: 1rem 1.5rem; display: block; color: rgba(255,255,255,0.7); text-decoration: none; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
+    .cms-menu-item:hover { background: rgba(255,255,255,0.05); color: white; }
+    .cms-menu-item.active { background: rgba(255,255,255,0.1); color: var(--c-red); border-left-color: var(--c-red); font-weight: bold; }
+    .cms-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .cms-header { height: 64px; background: white; border-bottom: 1px solid var(--c-border); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; }
+    .cms-content { flex: 1; overflow-y: auto; padding: 2rem; }
+    
+    /* Login Overlay for Admin */
+    .cms-login-overlay { position: fixed; inset: 0; background: var(--c-ink); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .cms-login-box { background: white; padding: 3rem; border-radius: var(--r-md); width: 100%; max-width: 400px; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <!-- ADMIN LOGIN OVERLAY -->
+  <div class="cms-login-overlay" id="admin-login-overlay">
+    <div class="cms-login-box">
+      <h2 style="margin-bottom: 1rem;">CAA CMS Panel</h2>
+      <p style="color: var(--c-ink-3); margin-bottom: 2rem;">Vui lòng đăng nhập bằng tài khoản Super Admin.</p>
+      <input type="email" class="field-input" placeholder="admin@caa.org.vn" style="margin-bottom: 1rem;" />
+      <input type="password" class="field-input" placeholder="Mật khẩu" style="margin-bottom: 1.5rem;" />
+      <button class="btn btn-primary btn-wide" style="justify-content: center;" onclick="document.getElementById('admin-login-overlay').style.display='none'">Đăng nhập Admin</button>
+      <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px dashed var(--c-border);">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('admin-login-overlay').style.display='none'">[Test] Bỏ qua đăng nhập</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="cms-sidebar">
+    <div class="cms-brand">Quản trị CAA</div>
+    <nav class="cms-menu" id="cms-nav">
+      <div class="cms-menu-item active" data-tab="overview">Tổng quan</div>
+      <div class="cms-menu-item" data-tab="requests">Yêu cầu gia nhập</div>
+      <div class="cms-menu-item" data-tab="contacts">Hộp thư liên hệ</div>
+      <div class="cms-menu-item" data-tab="users">Tài khoản & Phân quyền</div>
+      <div class="cms-menu-item" data-tab="content">Quản lý CMS (Web)</div>
+      <div class="cms-menu-item" data-tab="media">Thư viện Media</div>
+    </nav>
+    <div style="padding: 1rem;">
+      <button class="btn btn-ghost" style="width: 100%; color: white; border: 1px solid rgba(255,255,255,0.2);" onclick="window.location.href='index.html'">Quay về Website</button>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="cms-main">
+    <header class="cms-header">
+      <h2 id="cms-page-title" style="margin:0; font-size: 1.25rem;">Tổng quan Hệ thống</h2>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <span>Chào, Super Admin</span>
+        <img src="https://ui-avatars.com/api/?name=Admin&background=random" style="width: 32px; border-radius: 50%;" />
+      </div>
+    </header>
+    
+    <div class="cms-content">
+      
+      <!-- Panel: OVERVIEW -->
+      <div class="cms-panel" id="panel-overview">
+        <div class="admin-kpi-grid">
+          <article class="kpi-card"><span class="kpi-num tnum">12</span><span class="kpi-label">Yêu cầu chờ duyệt</span></article>
+          <article class="kpi-card"><span class="kpi-num tnum">148</span><span class="kpi-label">Hội viên chính thức</span></article>
+          <article class="kpi-card"><span class="kpi-num tnum">5</span><span class="kpi-label">Thư liên hệ mới</span></article>
+        </div>
+      </div>
+
+      <!-- Panel: REQUESTS -->
+      <div class="cms-panel" id="panel-requests" style="display:none;">
+        <h3 style="margin-bottom: 1rem;">Yêu cầu gia nhập</h3>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Doanh nghiệp</th><th>Lĩnh vực</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Truyền thông Minh An</td><td>Digital</td><td><span class="badge badge-yellow">Chờ duyệt</span></td>
+                <td class="table-action-group">
+                  <button class="btn btn-sm btn-primary">Duyệt</button>
+                  <button class="btn btn-sm btn-ghost" style="color: var(--c-red);">Từ chối</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Panel: CONTACTS -->
+      <div class="cms-panel" id="panel-contacts" style="display:none;">
+        <h3 style="margin-bottom: 1rem;">Hộp thư liên hệ</h3>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Ngày gửi</th><th>Người gửi</th><th>Chủ đề</th><th>Hành động</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="tnum">19/09 09:30</td><td>Nguyễn Văn A</td><td>Hỏi thủ tục</td>
+                <td class="table-action-group"><button class="btn btn-sm btn-secondary">Đọc</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Panel: USERS -->
+      <div class="cms-panel" id="panel-users" style="display:none;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+          <h3>Quản lý Tài khoản</h3>
+          <button class="btn btn-sm btn-primary">+ Cấp tài khoản mới</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Email User</th><th>Vai trò</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>ceo@minhan.vn</td><td>Hội viên</td><td><span class="badge badge-green">Hoạt động</span></td>
+                <td class="table-action-group">
+                  <button class="btn btn-sm btn-secondary">Đổi MK</button>
+                  <button class="btn btn-sm btn-ghost" style="color:var(--c-red);">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Panel: CONTENT -->
+      <div class="cms-panel" id="panel-content" style="display:none;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+          <h3>Quản lý Bài viết</h3>
+          <button class="btn btn-sm btn-primary">+ Viết bài mới</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Tiêu đề</th><th>Chuyên mục</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>OOH bùng nổ cuối năm 2026</td><td>Tin Ngành</td><td><span class="badge badge-green">Đã đăng</span></td>
+                <td class="table-action-group"><button class="btn btn-sm btn-secondary">Sửa</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Panel: MEDIA -->
+      <div class="cms-panel" id="panel-media" style="display:none;">
+        <h3 style="margin-bottom: 1rem;">Thư viện Media</h3>
+        <label class="upload-drop" style="background: white; border: 2px dashed var(--c-border); padding: 3rem; text-align: center; border-radius: var(--r-md); cursor: pointer; display: block;">
+          <span>Kéo thả hoặc <strong>chọn file</strong> để tải lên</span>
+        </label>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Tab switching logic for standalone CMS
+    const menuItems = document.querySelectorAll('.cms-menu-item');
+    const panels = document.querySelectorAll('.cms-panel');
+    const pageTitle = document.getElementById('cms-page-title');
+
+    menuItems.forEach(item => {
+      item.addEventListener('click', () => {
+        menuItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        
+        const tab = item.dataset.tab;
+        panels.forEach(p => p.style.display = 'none');
+        document.getElementById('panel-' + tab).style.display = 'block';
+        
+        pageTitle.textContent = item.textContent;
+      });
+    });
+  </script>
+</body>
+</html>
