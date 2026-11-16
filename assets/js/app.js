@@ -1,149 +1,201 @@
-/* =========================================================
-   CAA Website v2 · app.js
-   Static prototype — simulates RBAC, B2B directory,
-   events, join form, member portal, admin CMS, QR check-in
-   ========================================================= */
+let MEMBERS = [];
+let EVENTS = [];
+let DOCS = [];
+let NEWS = [];
 
-"use strict";
+// =========================================================================
+  // PHP BACKEND CONFIGURATION & API
+  // =========================================================================
+  
+  const apiBase = 'api'; // Đường dẫn thư mục chứa code PHP
+  
+  window.apiCall = async function(endpoint, data = {}, method = 'POST') {
+      const formData = new FormData();
+      for (const key in data) {
+        formData.append(key, data[key]);
+      }
+      
+      // Prevent caching on GET requests
+      const urlSuffix = method === 'GET' ? (endpoint.includes('?') ? '&_=' : '?_=') + Date.now() : '';
+      
+      try {
+        const response = await fetch(`${apiBase}/${endpoint}${urlSuffix}`, {
+          method: method,
+          body: method === 'POST' ? formData : null,
+          cache: 'no-store'
+        });
+        const text = await response.text();
+        try {
+          return JSON.parse(text);
+        } catch {
+          return {
+            success: false,
+            staticHost: true,
+            message: "Chức năng đăng nhập/quản trị cần máy chủ PHP & MySQL (bản GitHub Pages chỉ hỗ trợ xem nội dung tĩnh)."
+          };
+        }
+      } catch (err) {
+        return { success: false, message: "Lỗi kết nối máy chủ." };
+      }
+  };
 
-// ── DATA ──────────────────────────────────────────────────
+const ARTICLE_CATEGORY_MAP = {
+  'tin-caa': { cat: 'chi-hoi', label: 'Tin Chi hội' },
+  'chi-hoi': { cat: 'chi-hoi', label: 'Tin Chi hội' },
+  'su-kien': { cat: 'chi-hoi', label: 'Sự kiện' },
+  'kien-thuc': { cat: 'kien-thuc', label: 'Kiến thức' },
+  'tin-nganh': { cat: 'kien-thuc', label: 'Tin ngành' },
+  'phap-ly': { cat: 'phap-ly', label: 'Pháp lý' },
+  'the-thao': { cat: 'the-thao', label: 'Thể thao' },
+  'hoi-vien': { cat: 'hoi-vien', label: 'Hội viên' }
+};
 
-const MEMBERS = [
-  {
-    id: "tao-do", short: "TĐ", category: "OOH",
-    name: "Công ty CP Đầu tư và Thương mại Táo Đỏ",
-    tags: ["OOH", "Media booking", "Sản xuất"],
-    summary: "Đơn vị hội viên tiêu biểu trong hệ sinh thái quảng cáo ngoài trời, media booking và nhận diện thương hiệu.",
-    contact: "banthuky@taodo.example.vn", phone: "024 0000 0001",
-    status: "approved", statusLabel: "Đã xác minh",
-    capabilities: "Biển bảng OOH, media booking, sản xuất nhận diện ngoài trời, triển khai chuỗi.",
-    website: "https://taodo.example.vn",
-  },
-  {
-    id: "3t", short: "3T", category: "In ấn",
-    name: "Công ty Tân Tiến Thành 3T",
-    tags: ["In ấn", "POSM", "Vật tư", "Thi công"],
-    summary: "Nhà cung cấp in ấn, POSM và vật tư quảng cáo cho chiến dịch quy mô lớn tại Hà Nội.",
-    contact: "partner@3t.example.vn", phone: "024 0000 0002",
-    status: "approved", statusLabel: "Đã xác minh",
-    capabilities: "In khổ lớn, POSM, thi công, vật tư quảng cáo, hỗ trợ triển khai chuỗi.",
-    website: "https://3t.example.vn",
-  },
-  {
-    id: "dt-group", short: "DT", category: "Digital",
-    name: "DT Group",
-    tags: ["Digital", "Media", "Performance", "Social"],
-    summary: "Nhóm dịch vụ digital marketing, chiến dịch truyền thông tích hợp và quản trị dữ liệu.",
-    contact: "hello@dtgroup.example.vn", phone: "024 0000 0003",
-    status: "approved", statusLabel: "Đã xác minh",
-    capabilities: "Chiến lược digital, performance marketing, social content, media planning & buying.",
-    website: "https://dtgroup.example.vn",
-  },
-  {
-    id: "minh-an", short: "MA", category: "Digital",
-    name: "Truyền thông Minh An",
-    tags: ["Digital", "Nội dung", "Social", "Branding"],
-    summary: "Chuyên sản xuất nội dung số, chiến dịch social và landing page truyền thông cho thương hiệu.",
-    contact: "contact@minhan.example.vn", phone: "024 0000 0004",
-    status: "pending", statusLabel: "Chờ duyệt",
-    capabilities: "Sản xuất nội dung, social campaign, landing page, branding digital.",
-  },
-  {
-    id: "dong-do", short: "ĐĐ", category: "Sự kiện",
-    name: "Đông Đô Event",
-    tags: ["Sự kiện", "Gala", "Hội thảo", "Check-in"],
-    summary: "Tổ chức sự kiện chuyên nghiệp: Gala, hội thảo, triển lãm và vận hành check-in quy mô lớn.",
-    contact: "event@dongdo.example.vn", phone: "024 0000 0005",
-    status: "need-info", statusLabel: "Cần bổ sung",
-    capabilities: "Sản xuất sự kiện, sân khấu, vận hành check-in, hậu cần và media sự kiện.",
-  },
-  {
-    id: "bac-ha", short: "BH", category: "In ấn",
-    name: "Bắc Hà Print",
-    tags: ["In ấn", "POSM", "Thi công", "Vật tư"],
-    summary: "In ấn chất lượng cao, POSM và giải pháp triển khai thành phẩm cho chuỗi bán lẻ và sự kiện.",
-    contact: "print@bachaprint.example.vn", phone: "024 0000 0006",
-    status: "approved", statusLabel: "Đã xác minh",
-    capabilities: "POSM, in nhanh, thành phẩm, thi công, hỗ trợ triển khai chuỗi cửa hàng.",
-  },
-  {
-    id: "ha-thanh-media", short: "HT", category: "Media",
-    name: "Hà Thành Media",
-    tags: ["Media", "OOH", "Booking", "Kế hoạch"],
-    summary: "Media booking và lập kế hoạch truyền thông tích hợp, chuyên OOH và digital Hà Nội.",
-    contact: "media@hathanh.example.vn", phone: "024 0000 0007",
-    status: "approved", statusLabel: "Đã xác minh",
-    capabilities: "Media planning, OOH booking, digital placement, báo cáo hiệu quả chiến dịch.",
-  },
-  {
-    id: "viet-nam-promo", short: "VN", category: "Sản xuất",
-    name: "Việt Nam Promo",
-    tags: ["Sản xuất", "TVC", "AV", "Nội dung"],
-    summary: "Sản xuất TVC, video nội dung và tư liệu truyền thông chất lượng cao cho thương hiệu lớn.",
-    contact: "produce@vnpromo.example.vn", phone: "024 0000 0008",
-    status: "approved", statusLabel: "Đã xác minh",
-    capabilities: "TVC, viral video, motion graphic, phim tài liệu thương hiệu, live streaming.",
-  },
-];
+function mapDirectoryRow(d) {
+  return {
+    id: String(d.id),
+    short: d.short_name || (d.name || '').slice(0, 2).toUpperCase(),
+    category: d.category || '',
+    name: d.name || '',
+    tags: d.category ? [d.category] : [],
+    summary: d.summary || ((d.category ? d.category + ' - ' : '') + (d.name || '')),
+    contact: d.contact_email || '',
+    phone: d.phone || '',
+    status: d.status || 'active',
+    statusLabel: (d.status === 'active' || d.status === 'approved') ? 'Đã xác minh' : '',
+    capabilities: d.capabilities || d.category || '',
+    website: d.website || '',
+    logo: d.logo_url || ''
+  };
+}
 
-const EVENTS = [
-  {
-    id: "tax-workshop-2026",
-    title: "Hội thảo Thuế & Pháp lý Quảng cáo 2026",
-    date: "2026-09-18", day: "18", month: "09", year: "2026",
-    location: "Hà Nội · Trung tâm Hội nghị",
-    type: "upcoming",
-    status: "open", statusLabel: "Mở đăng ký",
-    summary: "Cập nhật quy định thuế mới nhất, hợp đồng quảng cáo và hồ sơ pháp lý cho doanh nghiệp ngành quảng cáo.",
-    capacity: 80, registered: 24,
-    detail: "Diễn giả gồm chuyên gia thuế và luật sư chuyên ngành truyền thông. Hội viên CAA ưu tiên đăng ký và được giảm phí tham dự.",
-  },
-  {
-    id: "b2b-networking-oct",
-    title: "Giao lưu B2B Hội viên CAA — Tháng 10",
-    date: "2026-10-15", day: "15", month: "10", year: "2026",
-    location: "Hà Nội · Địa điểm sẽ thông báo",
-    type: "upcoming",
-    status: "coming", statusLabel: "Sắp mở ĐK",
-    summary: "Sự kiện kết nối hội viên theo nhóm lĩnh vực: OOH gặp Digital, In ấn gặp Event. Tìm đối tác mới trong nội khối.",
-    capacity: 60, registered: 0,
-    detail: "Định dạng speed-networking theo bàn lĩnh vực. Mỗi hội viên có 3 phút giới thiệu và 10 phút kết nối 1-1.",
-  },
-  {
-    id: "pickleball-2026",
-    title: "Giải Pickleball CAA Mở rộng 2026",
-    date: "2026-03-28", day: "28", month: "03", year: "2026",
-    location: "Hà Nội · Sân Pickleball",
-    type: "past",
-    status: "ended", statusLabel: "Đã diễn ra",
-    summary: "Không gian giao lưu thể thao cho hội viên, đối tác và cộng đồng ngành quảng cáo ngoài phòng họp.",
-    capacity: 60, registered: 56,
-    detail: "Giải đấu đơn và đôi, có phần thưởng và networking sau trận đấu. Hơn 50 hội viên và đối tác tham dự.",
-  },
-  {
-    id: "gala-2026",
-    title: "Gala Kết nạp Hội viên mới & Ra mắt CLB Pickleball",
-    date: "2026-06-30", day: "30", month: "06", year: "2026",
-    location: "Hà Nội · Khách sạn 5 sao",
-    type: "past",
-    status: "ended", statusLabel: "Đã diễn ra",
-    summary: "Sự kiện kết nối cộng đồng, chào đón hội viên mới và ra mắt Câu lạc bộ Pickleball CAA.",
-    capacity: 120, registered: 118,
-    detail: "Lễ kết nạp hội viên chính thức, trao thẻ hội viên, ra mắt CLB Pickleball và giao lưu ẩm thực.",
-  },
-];
+function mapEventRow(d) {
+  const isPast = ['ended', 'completed', 'past'].includes(d.status);
+  const status = isPast ? 'past' : (d.status || 'upcoming');
+  const statusLabel = status === 'upcoming' ? 'Sắp diễn ra' : (status === 'past' ? 'Đã diễn ra' : 'Mở đăng ký');
+  const parts = (d.date || '').split('-');
+  const desc = (d.description || '').trim();
+  return {
+    id: String(d.id),
+    title: d.title || '',
+    date: d.date || '',
+    time: d.time || '',
+    location: d.location || '',
+    type: d.type || 'Hội thảo',
+    status: status,
+    image: 'assets/img/launch-event.jpg',
+    link: d.registration_link || '',
+    day: parts[2] || '',
+    month: parts[1] || '',
+    year: parts[0] || '',
+    statusLabel: statusLabel,
+    summary: desc ? (desc.length > 130 ? desc.slice(0, 130) + '...' : desc) : (d.title || ''),
+    capacity: d.capacity,
+    registered: d.registered || 0,
+    detail: desc || d.title || ''
+  };
+}
 
-const NEWS = [];
+function mapDocRow(d) {
+  const access = d.access_level || 'public';
+  const accessLabel = access === 'public' ? 'Công khai' : (access === 'admin' ? 'Nội bộ' : 'Thành viên');
+  return {
+    id: String(d.id),
+    name: d.title || '',
+    category: d.category || '',
+    date: (d.created_at || '').split(' ')[0] || '',
+    access: access,
+    accessLabel: accessLabel,
+    size: '1.2 MB',
+    type: 'PDF',
+    url: d.file_url || '#'
+  };
+}
 
-const DOCS = [
-  { id: "doc-1", name: "Thông báo hoạt động Chi hội Q3/2026", type: "PDF", access: "public", accessLabel: "Công khai", date: "2026-09-01" },
-  { id: "doc-2", name: "Quy định biển bảng OOH Hà Nội 2026", type: "PDF", access: "member", accessLabel: "Hội viên", date: "2026-08-20" },
-  { id: "doc-3", name: "Tài liệu Hội thảo Thuế & Pháp lý 2026", type: "PDF", access: "member", accessLabel: "Hội viên", date: "2026-09-18" },
-  { id: "doc-4", name: "Mẫu hợp đồng quảng cáo ngoài trời", type: "DOCX", access: "member", accessLabel: "Hội viên", date: "2026-07-15" },
-  { id: "doc-5", name: "Điều lệ Chi hội Quảng cáo Thủ đô", type: "PDF", access: "public", accessLabel: "Công khai", date: "2026-03-28" },
-];
+function extractArticleExcerpt(html) {
+  if (!html) return '';
+  if (typeof document !== 'undefined') {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const sapo = tmp.querySelector('.sc-longform-header-sapo, .block-sc-sapo');
+    if (sapo && sapo.textContent.trim()) {
+      const s = sapo.textContent.replace(/\s+/g, ' ').trim();
+      return s.length > 120 ? s.substring(0, 120) + '...' : s;
+    }
+    tmp.querySelectorAll('.lwptoc, .sc-longform-header, .c-article-relation, script, style').forEach(el => el.remove());
+    const clean = (tmp.textContent || '').replace(/\s+/g, ' ').trim();
+    return clean ? (clean.length > 120 ? clean.substring(0, 120) + '...' : clean) : '';
+  }
+  const rawText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return rawText ? rawText.substring(0, 120) + '...' : '';
+}
 
-const SEARCH_INDEX = [
+function mapArticleRow(d) {
+  const mapped = ARTICLE_CATEGORY_MAP[d.category] || { cat: d.category || 'hoi-vien', label: 'Hội viên' };
+  return {
+    id: String(d.id),
+    cat: mapped.cat,
+    catLabel: mapped.label,
+    date: (d.created_at || '').split(' ')[0] || '2026-09-24',
+    title: d.title || '',
+    excerpt: extractArticleExcerpt(d.content),
+    artBg: 'var(--c-bg-2)',
+    img: d.image_url || ''
+  };
+}
+
+async function fetchStaticFallback() {
+  try {
+    const res = await fetch(`assets/data/db.json?_=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+async function fetchData() {
+    try {
+        const [dirRes, evRes, docRes, artRes] = await Promise.all([
+            window.apiCall('public.php?action=get_directory', {}, 'GET'),
+            window.apiCall('public.php?action=get_events', {}, 'GET'),
+            window.apiCall('public.php?action=get_docs', {}, 'GET'),
+            window.apiCall('public.php?action=get_articles', {}, 'GET')
+        ]);
+
+        const needsStatic = !(dirRes?.success && evRes?.success && docRes?.success && artRes?.success);
+        const staticData = needsStatic ? await fetchStaticFallback() : null;
+
+        const dirRows = dirRes?.success ? dirRes.data : staticData?.directory;
+        const evRows = evRes?.success ? evRes.data : staticData?.events;
+        const docRows = docRes?.success ? docRes.data : staticData?.documents;
+        const artRows = artRes?.success ? artRes.data : staticData?.articles;
+
+        if (Array.isArray(dirRows)) MEMBERS = dirRows.map(mapDirectoryRow);
+        if (Array.isArray(evRows)) EVENTS = evRows.map(mapEventRow);
+        if (Array.isArray(docRows)) DOCS = docRows.map(mapDocRow);
+        if (Array.isArray(artRows)) {
+            NEWS = artRows.map(mapArticleRow);
+        } else if (typeof ARTICLES !== 'undefined' && Array.isArray(ARTICLES)) {
+            NEWS = ARTICLES.map(a => ({
+                id: a.id,
+                cat: 'chi-hoi',
+                catLabel: 'Tin Chi hội',
+                date: '2026-09-16',
+                title: a.title,
+                excerpt: a.description || '',
+                artBg: 'var(--c-bg-2)',
+                img: a.image || ''
+            }));
+        }
+
+        if (typeof refreshSearchIndex === 'function') refreshSearchIndex();
+    } catch(e) {
+        console.error('Lỗi tải dữ liệu', e);
+    }
+}
+
+
+const STATIC_SEARCH_PAGES = [
   { label: "Trang chủ", href: "index.html", type: "Trang" },
   { label: "Giới thiệu CAA", href: "about.html", type: "Trang" },
   { label: "Ban Chấp hành", href: "about.html#leadership", type: "Trang" },
@@ -157,11 +209,17 @@ const SEARCH_INDEX = [
   { label: "Tài liệu", href: "docs.html", type: "Trang" },
   { label: "QR Check-in", href: "events.html#checkin", type: "Tính năng" },
   { label: "Admin CMS", href: "admin.html", type: "Tính năng" },
-  { label: "Liên hệ", href: "contact.html", type: "Trang" },
-  ...MEMBERS.map(m => ({ label: m.name, href: "directory.html", type: m.category })),
-  ...EVENTS.map(e => ({ label: e.title, href: "events.html", type: "Sự kiện" })),
-  ...NEWS.map(n => ({ label: n.title, href: "news.html", type: "Tin tức" })),
+  { label: "Liên hệ", href: "contact.html", type: "Trang" }
 ];
+let SEARCH_INDEX = [...STATIC_SEARCH_PAGES];
+function refreshSearchIndex() {
+  SEARCH_INDEX = [
+    ...STATIC_SEARCH_PAGES,
+    ...MEMBERS.map(m => ({ label: m.name, href: "directory.html", type: m.category || "Hội viên" })),
+    ...EVENTS.map(e => ({ label: e.title, href: "events.html", type: "Sự kiện" })),
+    ...NEWS.map(n => ({ label: n.title, href: `news-detail.html?id=${n.id}`, type: "Tin tức" }))
+  ];
+}
 
 const QR_CODES = {
   "CAA-2026-001": { valid: true, name: "Nguyễn Văn A · Táo Đỏ", event: "Hội thảo Thuế & Pháp lý 2026" },
@@ -237,15 +295,20 @@ function setRole(role) {
   localStorage.setItem("caa-role", role);
   document.body.dataset.role = role;
 
+  const isLoggedIn = role !== 'guest';
+
   // Update login button label
-  $$("[data-login-label]").forEach(el => { el.textContent = role === "guest" ? "Đăng nhập" : roleName(role); });
+  $$("[data-login-label]").forEach(el => { el.textContent = role === "guest" ? "Đăng nhập" : (localStorage.getItem("caa-email") || roleName(role)); });
   $$(".login-btn").forEach(el => { el.textContent = role === "guest" ? "Đăng nhập" : roleName(role); });
+
+  // Ẩn/hiện nút Đăng xuất
+  $$("[data-logout]").forEach(el => { el.style.display = isLoggedIn ? 'inline-flex' : 'none'; });
 
   // Re-render role-gated elements
   renderRoleGates();
   renderDirectory();
   renderDirectoryInner();
-  toast(`Đang xem bằng vai trò: ${roleName(role)}.`, "success");
+  toast(isLoggedIn ? `Chào mừng! Đang xem với vai trò: ${roleName(role)}.` : "Đã đăng xuất.", "success");
 }
 
 function renderRoleGates() {
@@ -355,7 +418,7 @@ function renderMemberCard(m, showFull = false) {
         <span>Đăng nhập hội viên để xem thông tin liên hệ nội bộ.</span>
        </p>`;
 
-  const statusBadge = m.status === "approved"
+  const statusBadge = (m.status === "approved" || m.status === "active")
     ? `<span class="badge badge-green">${escapeHtml(m.statusLabel)}</span>`
     : m.status === "pending"
       ? `<span class="badge badge-yellow">${escapeHtml(m.statusLabel)}</span>`
@@ -364,7 +427,7 @@ function renderMemberCard(m, showFull = false) {
   return `
     <article class="member-card" data-member-id="${m.id}">
       <header class="member-card-header">
-        <span class="member-logo" aria-hidden="true">${escapeHtml(m.short)}</span>
+        ${m.logo ? `<img src="${escapeHtml(m.logo)}" class="member-logo" alt="${escapeHtml(m.name)}" style="object-fit:contain;padding:4px;background:#fff;">` : `<span class="member-logo" aria-hidden="true">${escapeHtml(m.short)}</span>`}
         <div class="member-header-info">
           <h3 class="member-name">${escapeHtml(m.name)}</h3>
           <span class="badge badge-default">${escapeHtml(m.category)}</span>
@@ -452,14 +515,17 @@ function openProfileDialog(m) {
   const content = $("profile-dialog-content");
   if (!content) return;
   const full = isPrivileged();
+  const webHref = m.website
+    ? (/^https?:\/\//i.test(m.website) ? m.website : (m.website.includes('.') ? 'https://' + m.website : m.website))
+    : "";
   content.innerHTML = `
     <div class="profile-dialog-body">
       <div class="profile-dialog-top">
-        <span class="member-logo large" aria-hidden="true">${escapeHtml(m.short)}</span>
+        ${m.logo ? `<img src="${escapeHtml(m.logo)}" class="member-logo large" alt="${escapeHtml(m.name)}" style="object-fit:contain;padding:4px;background:#fff;">` : `<span class="member-logo large" aria-hidden="true">${escapeHtml(m.short)}</span>`}
         <div>
           <h3>${escapeHtml(m.name)}</h3>
           <span class="badge badge-default">${escapeHtml(m.category)}</span>
-          <span class="badge ${m.status === "approved" ? "badge-green" : "badge-yellow"}">${escapeHtml(m.statusLabel)}</span>
+          <span class="badge ${(m.status === "approved" || m.status === "active") ? "badge-green" : "badge-yellow"}">${escapeHtml(m.statusLabel)}</span>
         </div>
       </div>
       <p>${escapeHtml(m.summary)}</p>
@@ -469,7 +535,7 @@ function openProfileDialog(m) {
         <div><dt>Năng lực</dt><dd>${escapeHtml(m.capabilities)}</dd></div>
         <div><dt>Email</dt><dd>${full ? `<a href="mailto:${escapeHtml(m.contact)}">${escapeHtml(m.contact)}</a>` : "<em>Chỉ hiện với hội viên</em>"}</dd></div>
         <div><dt>Điện thoại</dt><dd>${full ? escapeHtml(m.phone) : "<em>Chỉ hiện với hội viên</em>"}</dd></div>
-        ${m.website ? `<div><dt>Website</dt><dd><a href="${escapeHtml(m.website)}" target="_blank" rel="noopener">${escapeHtml(m.website)}</a></dd></div>` : ""}
+        ${m.website ? `<div><dt>Website</dt><dd><a href="${escapeHtml(webHref)}" target="_blank" rel="noopener">${escapeHtml(m.website)}</a></dd></div>` : ""}
       </dl>
       ${full ? `<button class="btn btn-primary" type="button" data-connect="${m.id}">Gửi yêu cầu kết nối</button>` : `<button class="btn btn-secondary" type="button" data-open-login>Đăng nhập để kết nối</button>`}
     </div>`;
@@ -478,9 +544,19 @@ function openProfileDialog(m) {
 
 // ── EVENTS ────────────────────────────────────────────────
 
+function eventStatusMeta(ev) {
+  const isPast = ev.status === "ended" || ev.status === "past";
+  const statusClass = ev.status === "open"
+    ? "badge-green"
+    : (ev.status === "upcoming" || ev.status === "coming")
+      ? "badge-yellow"
+      : "badge-default";
+  return { isPast, statusClass };
+}
+
 function renderEventCard(ev) {
   const regPct = ev.capacity ? Math.round((ev.registered / ev.capacity) * 100) : 0;
-  const statusClass = ev.status === "open" ? "badge-green" : ev.status === "coming" ? "badge-yellow" : "badge-default";
+  const { isPast, statusClass } = eventStatusMeta(ev);
 
   return `
     <article class="event-card" data-event-id="${ev.id}">
@@ -504,7 +580,7 @@ function renderEventCard(ev) {
       </div>
       <footer class="event-card-footer">
         <button class="btn btn-primary btn-sm" type="button" data-register-event="${ev.id}">
-          ${ev.status === "ended" ? "Xem chi tiết" : "Đăng ký tham dự"}
+          ${isPast ? "Xem chi tiết" : "Đăng ký tham dự"}
         </button>
         <button class="btn btn-ghost btn-sm" type="button" data-event-detail="${ev.id}">Chi tiết</button>
       </footer>
@@ -512,12 +588,17 @@ function renderEventCard(ev) {
 }
 
 function renderEvents() {
-  const grid = $("event-grid");
-  if (!grid) return;
-  let filtered = state.eventFilter === "all" ? EVENTS : EVENTS.filter(e => e.type === state.eventFilter);
-  if (grid.dataset.limit) filtered = filtered.slice(0, parseInt(grid.dataset.limit, 10));
-  grid.innerHTML = filtered.map(e => renderEventCard(e)).join("");
-}
+    const grid = $("event-grid");
+    if (!grid) return;
+    let filtered = state.eventFilter === "all" ? EVENTS : EVENTS.filter(e => e.status === state.eventFilter);
+    if (grid.dataset.limit) filtered = filtered.slice(0, parseInt(grid.dataset.limit, 10));
+    
+    if (filtered.length === 0) {
+        grid.innerHTML = '<div class="dir-empty"><p>Không có sự kiện nào.</p></div>';
+    } else {
+        grid.innerHTML = filtered.map(e => renderEventCard(e)).join("");
+    }
+  }
 
 function setupEvents() {
   $$("[data-event-filter]").forEach(btn => {
@@ -535,8 +616,8 @@ function setupEvents() {
     if (regBtn) {
       const ev = EVENTS.find(x => x.id === regBtn.dataset.registerEvent);
       if (!ev) return;
-      if (ev.status === "ended") {
-        toast(`Sự kiện "${ev.title}" đã kết thúc. Xem album và tài liệu trong mục Tin tức.`, "info");
+      if (eventStatusMeta(ev).isPast) {
+        openEventDetail(ev);
         return;
       }
       toast(`Đã tạo đăng ký mẫu cho: ${ev.title}. QR check-in sẽ gửi qua email.`, "success");
@@ -553,7 +634,7 @@ function setupEvents() {
 function openEventDetail(ev) {
   const content = $("event-dialog-content");
   if (!content) return;
-  const statusClass = ev.status === "open" ? "badge-green" : ev.status === "coming" ? "badge-yellow" : "badge-default";
+  const { isPast, statusClass } = eventStatusMeta(ev);
   content.innerHTML = `
     <div class="event-detail-body">
       <div class="event-detail-top">
@@ -570,7 +651,7 @@ function openEventDetail(ev) {
       </div>
       <p>${escapeHtml(ev.detail)}</p>
       ${ev.capacity ? `<p class="tnum">Số chỗ: ${ev.registered} / ${ev.capacity}</p>` : ""}
-      ${ev.status !== "ended" ? `<button class="btn btn-primary" type="button" data-register-event="${ev.id}">Đăng ký tham dự</button>` : ""}
+      ${!isPast ? `<button class="btn btn-primary" type="button" data-register-event="${ev.id}">Đăng ký tham dự</button>` : ""}
     </div>`;
   openDialog("event-dialog");
 }
@@ -667,6 +748,9 @@ function setupDocs() {
       return;
     }
     toast(`Đã ghi audit log: Tải "${doc.name}".`, "success");
+    if (doc.url && doc.url !== '#') {
+      window.open(doc.url, '_blank', 'noopener');
+    }
   });
 }
 
@@ -1003,65 +1087,198 @@ function setupSearch() {
 // ── LOGIN / ROLE ───────────────────────────────────────────
 
 function setupRoleControls() {
+  // Tự động kiểm tra session khi load trang
+  (async () => {
+    const res = await window.apiCall('auth.php', { action: 'check_session' });
+    if (res && res.success) {
+      setRole(res.role);
+    }
+  })();
 
-    // =========================================================================
-    // FIREBASE BACKEND CONFIGURATION
-    // =========================================================================
-    // BƯỚC 1: Tạo dự án tại console.firebase.google.com
-    // BƯỚC 2: Bật Authentication (Email/Password)
-    // BƯỚC 3: Lấy Web Config và dán vào đây:
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+  // =========================================================================
+  // MULTI-VIEW AUTHENTICATION FLOW
+  // =========================================================================
+  const loginDialog = $("login-dialog");
+  if (loginDialog) {
+    const views = {
+      login: $("view-login"),
+      register: $("view-register"),
+      forgot: $("view-forgot"),
+      otp: $("view-otp")
     };
+    const authLabel = $("auth-label");
 
-    let auth, db;
-    const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+    function switchAuthView(viewId, label) {
+      Object.values(views).forEach(v => { if (v) v.style.display = 'none'; });
+      if (views[viewId]) views[viewId].style.display = 'block';
+      if (authLabel) authLabel.textContent = label;
+    }
 
-    if (isFirebaseConfigured && typeof firebase !== "undefined") {
-      firebase.initializeApp(firebaseConfig);
-      auth = firebase.auth();
-      db = firebase.firestore();
+    loginDialog.querySelectorAll(".auth-link").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        const target = e.target.dataset.goto;
+        if (target === 'login') switchAuthView('login', 'Đăng nhập');
+        if (target === 'register') switchAuthView('register', 'Đăng ký');
+        if (target === 'forgot') switchAuthView('forgot', 'Quên mật khẩu');
+      });
+    });
 
-      // Theo dõi trạng thái đăng nhập tự động
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          if (user.emailVerified) {
-            setRole("member"); // Đăng nhập thành công và đã xác thực
-            $("login-dialog")?.close?.();
-          } else {
-            auth.signOut();
-            toast("Tài khoản chưa xác thực. Vui lòng kiểm tra email và bấm vào link kích hoạt.", "error");
+    // ĐĂNG KÝ
+    if (views.register) {
+      views.register.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = $("reg-email").value;
+        const pass = views.register.querySelector("input[type='password']").value;
+        const btn = views.register.querySelector("button[type='submit']");
+        
+        btn.disabled = true;
+        btn.textContent = "Đang xử lý...";
+        
+        const res = await window.apiCall('auth.php', { action: 'register', email, password: pass });
+        if (res.success) {
+          sendOTPWithEmailJS(email, res.otp, (sent) => {
+            toast(sent ? "Đã gửi mã! Nếu không nhận được, vui lòng kiểm tra xem có gõ sai email không." : "Lỗi gửi OTP, vui lòng thử lại.", sent ? "success" : "error");
+            $("otp-target-email").textContent = email;
+            views.otp.dataset.otpMode = 'register';
+            switchAuthView('otp', 'Xác minh Email');
+          });
+        } else if (res.action === 'redirect_login') {
+          let msgEl = views.register.querySelector('.auth-error-msg');
+          if (!msgEl) {
+            msgEl = document.createElement('p');
+            msgEl.className = 'auth-error-msg';
+            msgEl.style.cssText = 'color:var(--c-red);font-size:var(--t-sm);margin-top:0.5rem;text-align:center;';
+            views.register.querySelector("button[type='submit']").after(msgEl);
           }
+          msgEl.innerHTML = `${res.message} <a href="#" style="font-weight:700;color:var(--c-red);text-decoration:underline;">Đăng nhập ngay →</a>`;
+          msgEl.querySelector('a').onclick = (ev) => { ev.preventDefault(); switchAuthView('login', 'Đăng nhập'); };
         } else {
-          setRole("guest"); // Đã đăng xuất
+          toast(res.message, "error");
         }
+        btn.disabled = false;
+        btn.textContent = "Đăng ký";
       });
     }
 
-    
+    // OTP (dùng chung cho Đăng ký và Quên mật khẩu)
+    if (views.otp) {
+      views.otp.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = $("otp-target-email").textContent;
+        const otp = $("otp-code").value;
+        const btn = views.otp.querySelector("button[type='submit']");
+        const mode = views.otp.dataset.otpMode || 'register';
+        const newPass = $("reset-pass")?.value || '';
+        
+        btn.disabled = true;
+        btn.textContent = "Đang xác thực...";
 
-  // =========================================================================
-  
-    
-    const saved = localStorage.getItem("caa-role");
-  if (saved && ["guest", "member", "admin"].includes(saved)) { setRole(saved === "admin" ? "member" : saved); }
+        let res;
+        if (mode === 'forgot') {
+          res = await window.apiCall('auth.php', { action: 'reset_password', email, otp, new_password: newPass });
+        } else {
+          res = await window.apiCall('auth.php', { action: 'verify_otp', email, otp });
+        }
 
-    document.body.addEventListener("click", e => {
-    if (e.target.closest("[data-open-login]")) {
-      openDialog("login-dialog");
+        if (res.success) {
+          toast(res.message, "success");
+          if ($("reset-password-fields")) $("reset-password-fields").style.display = 'none';
+          if ($("reset-pass")) $("reset-pass").required = false;
+          views.otp.dataset.otpMode = 'register';
+          switchAuthView('login', 'Đăng nhập');
+        } else {
+          toast(res.message, "error");
+        }
+        btn.disabled = false;
+        btn.textContent = "Xác nhận";
+      });
+    }
+
+    // QUÊN MẬT KHẨU
+    if (views.forgot) {
+      views.forgot.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = $("forgot-email").value;
+        const btn = views.forgot.querySelector("button[type='submit']");
+        
+        btn.disabled = true;
+        btn.textContent = "Đang kiểm tra...";
+
+        const res = await window.apiCall('auth.php', { action: 'forgot_password', email });
+        if (res.success) {
+          sendOTPWithEmailJS(email, res.otp, (sent) => {
+            toast(sent ? "Đã gửi mã! Nếu không nhận được, vui lòng kiểm tra xem có gõ sai email không." : "Lỗi gửi email.", sent ? "success" : "error");
+            $("otp-target-email").textContent = email;
+            const resetFields = $("reset-password-fields");
+            if (resetFields) resetFields.style.display = 'flex';
+            if ($("reset-pass")) $("reset-pass").required = true;
+            views.otp.dataset.otpMode = 'forgot';
+            switchAuthView('otp', 'Đặt lại mật khẩu');
+          });
+        } else {
+          toast(res.message, "error");
+        }
+        btn.disabled = false;
+        btn.textContent = "Gửi mã khôi phục";
+      });
+    }
+
+    // ĐĂNG NHẬP
+    if (views.login) {
+      views.login.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = $("login-email").value;
+        const pass = $("login-pass").value;
+        const btn = views.login.querySelector("button[type='submit']");
+        
+        btn.disabled = true;
+        btn.textContent = "Đang kết nối...";
+
+        const res = await window.apiCall('auth.php', { action: 'login', email, password: pass });
+        if (res.success) {
+          toast(res.message, "success");
+          setRole(res.role);
+          localStorage.setItem("caa-email", res.email);
+          $$("[data-login-label]").forEach(el => el.textContent = res.email);
+          loginDialog.close();
+        } else {
+          toast(res.message, "error");
+        }
+        btn.disabled = false;
+        btn.textContent = "Đăng nhập";
+      });
+    }
+
+    const closeBtn = loginDialog.querySelector('.dialog-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        loginDialog.close();
+        setTimeout(() => switchAuthView('login', 'Đăng nhập'), 300);
+      });
+    }
+  }
+
+  // ĐĂNG XUẤT
+  document.body.addEventListener("click", async (e) => {
+    if (e.target.closest("[data-logout]")) {
+      const res = await window.apiCall('auth.php', { action: 'logout' });
+      if (res.success) {
+        localStorage.removeItem("caa-role");
+        localStorage.removeItem("caa-email");
+        setRole("guest");
+        toast("Đã đăng xuất thành công.", "success");
+      }
     }
   });
 
-  $$("[data-set-role]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      setRole(btn.dataset.setRole);
-      $("login-dialog")?.close?.();
-    });
+  const saved = localStorage.getItem("caa-role");
+  if (saved && ["guest", "member", "admin"].includes(saved)) { setRole(saved === "admin" ? "member" : saved); }
+
+  document.body.addEventListener("click", e => {
+    if (e.target.closest("[data-open-login]")) {
+      openDialog("login-dialog");
+    }
   });
 }
 
@@ -1083,69 +1300,42 @@ function setupNavScroll() {
 // ── INIT ──────────────────────────────────────────────────
 
 
+  
+
   // =========================================================================
-  // DATABASE & CMS API (FIREBASE FIRESTORE SKELETON)
+  // DATABASE & CMS API (PHP BACKEND SKELETON)
   // =========================================================================
   const dbAPI = {
-    // 1. Quản lý Yêu cầu gia nhập
     submitApplication: async (data) => {
-      if (typeof db !== "undefined") {
-        data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        data.status = 'pending';
-        return await db.collection("applications").add(data);
-      }
+      data.action = 'submit_application';
+      return await window.apiCall('public.php', data);
     },
     getApplications: async () => {
-      if (typeof db !== "undefined") {
-        const snapshot = await db.collection("applications").orderBy("createdAt", "desc").get();
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      }
-      return [];
+      const res = await window.apiCall('admin.php?action=get_applications', {}, 'GET');
+      return res.data || [];
     },
-
-    // 2. Quản lý Liên hệ (Hộp thư)
     submitContact: async (data) => {
-      if (typeof db !== "undefined") {
-        data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        data.status = 'unread';
-        return await db.collection("contacts").add(data);
-      }
+      data.action = 'submit_contact';
+      return await window.apiCall('public.php', data);
     },
     getContacts: async () => {
-      if (typeof db !== "undefined") {
-        const snapshot = await db.collection("contacts").orderBy("createdAt", "desc").get();
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      }
-      return [];
+      const res = await window.apiCall('admin.php?action=get_contacts', {}, 'GET');
+      return res.data || [];
     },
-
-    // 3. Quản lý Người dùng & Phân quyền
     getUsers: async () => {
-      if (typeof db !== "undefined") {
-        const snapshot = await db.collection("users").get();
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      }
-      return [];
+      const res = await window.apiCall('admin.php?action=get_users', {}, 'GET');
+      return res.data || [];
     },
     updateUserRole: async (uid, role) => {
-      if (typeof db !== "undefined") {
-        return await db.collection("users").doc(uid).update({ role: role });
-      }
+      return await window.apiCall('admin.php', { action: 'update_user_role', id: uid, role: role });
     },
-
-    // 4. Quản lý Nội dung (CMS - Bài viết, Sự kiện)
     createArticle: async (data) => {
-      if (typeof db !== "undefined") {
-        data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        return await db.collection("articles").add(data);
-      }
+      data.action = 'create_article';
+      return await window.apiCall('admin.php', data);
     },
     getArticles: async () => {
-      if (typeof db !== "undefined") {
-        const snapshot = await db.collection("articles").orderBy("createdAt", "desc").get();
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      }
-      return [];
+      const res = await window.apiCall('public.php?action=get_articles', {}, 'GET');
+      return res.data || [];
     }
   };
 
@@ -1167,7 +1357,7 @@ function setupNavScroll() {
       };
 
       try {
-        await dbAPI.submitContact(formData); // Lưu vào DB nếu có
+        await dbAPI.submitContact(formData); // Lưu vào DB
         sendWithEmailJS(contactForm, () => {
           const statusEl = $("contact-status");
           if (statusEl) statusEl.textContent = "✔ Đã ghi nhận. Ban thư ký sẽ phản hồi trong 1-2 ngày làm việc.";
@@ -1195,12 +1385,12 @@ function setupNavScroll() {
         tax: $("f-tax").value,
         email: $("f-email").value,
         phone: $("f-phone").value,
+        website: $("f-website").value,
         category: $("f-cat").value
-        // Thêm các trường khác...
       };
 
       try {
-        await dbAPI.submitApplication(formData); // Lưu vào DB nếu có
+        await dbAPI.submitApplication(formData); // Lưu vào DB
         sendWithEmailJS(joinForm, () => {
           toast("Đã gửi hồ sơ hội viên thành công.", "success");
           joinForm.reset();
@@ -1213,7 +1403,9 @@ function setupNavScroll() {
   }
 
 
-function init() {
+async function init() {
+  await fetchData();
+
 
   // Floating Contact Toggle
   document.addEventListener("click", e => {
@@ -1411,27 +1603,6 @@ function initAutocomplete() {
 }
 initAutocomplete();
 
-// Inject fetched articles into NEWS
-if (typeof ARTICLES !== 'undefined') {
-  ARTICLES.forEach(a => {
-    // Only add if not already present to avoid duplicates during hot reloads
-    if (!NEWS.find(n => n.id === a.id)) {
-      NEWS.unshift({
-        id: a.id,
-        cat: 'chi-hoi',
-        catLabel: 'Tin Chi hội',
-        date: '2026-09-16',
-        title: a.title,
-        excerpt: a.description,
-        artBg: 'var(--c-bg-2)', // Optional background, or we could use the image
-        img: a.image
-      });
-    }
-  });
-  // Re-render if already rendered
-  if (typeof renderNews === 'function') renderNews();
-}
-
 // ==========================================
 // CINEMATIC SCROLL TRIGGER & COUNTER
 // ==========================================
@@ -1492,3 +1663,56 @@ document.addEventListener('click', e => {
     if (dialog) dialog.close();
   }
 });
+
+
+  // =========================================================================
+  // EmailJS Integration
+  // =========================================================================
+  if (typeof emailjs !== 'undefined') {
+    emailjs.init("DiC2iLy_ckysl-RP0");
+  }
+
+  function sendWithEmailJS(formElement, onSuccess) {
+    if (typeof emailjs === 'undefined') {
+      onSuccess();
+      return;
+    }
+    const btn = formElement.querySelector("button[type='submit']");
+    const originalText = btn.textContent;
+    btn.textContent = "Đang gửi...";
+    btn.disabled = true;
+
+    emailjs.sendForm("service_r6zoijc", "template_wkk2q2n", formElement)
+      .then(() => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+        onSuccess();
+      })
+      .catch((err) => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+        toast("Lỗi gửi EmailJS: " + JSON.stringify(err), "error");
+        onSuccess(); // Still succeed locally
+      });
+  }
+
+  function sendOTPWithEmailJS(email, otp, onSuccess) {
+    if (typeof emailjs === 'undefined') {
+      onSuccess();
+      return;
+    }
+    const templateParams = {
+      email: email,
+      otp_code: otp,
+      message: "Đây là mã xác thực OTP của bạn."
+    };
+    
+    emailjs.send("service_r6zoijc", "template_9trgqe3", templateParams)
+      .then(() => {
+        onSuccess(true);
+      })
+      .catch((err) => {
+        toast("Lỗi gửi OTP qua EmailJS: " + JSON.stringify(err), "error");
+        onSuccess(false);
+      });
+  }

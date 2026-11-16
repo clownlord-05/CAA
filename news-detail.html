@@ -101,6 +101,7 @@
     .article-body .sc-detail-comment { display: none; }
     .article-body .sc-detail-tag { display: none; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body class="page-layout">
 <header class="nav" id="site-nav" data-nav>
@@ -126,7 +127,10 @@
       <!-- Nav End -->
       <div class="nav-end">
         <button class="search-btn btn btn-ghost btn-icon" type="button" aria-label="Tìm kiếm" data-open-search>🔍</button>
-        <button class="login-btn btn btn-ghost btn-sm" type="button" data-open-login>Đăng nhập</button>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+              <button class="login-btn btn btn-ghost btn-sm" type="button" data-open-login>Đăng nhập</button>
+              <button type="button" class="btn btn-ghost btn-sm" data-logout style="display:none;">Đăng xuất</button>
+            </div>
         <a class="btn btn-primary btn-sm join-btn" href="join.html">Gia nhập CAA</a>
         <button class="mobile-toggle btn btn-ghost btn-icon" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-drawer">☰</button>
       </div>
@@ -330,34 +334,64 @@
 
   <script src="assets/js/articles_data.min.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    async function loadArticlesList() {
+        try {
+            const res = await fetch('api/public.php?action=get_articles&_=' + Date.now(), { cache: 'no-store' });
+            const json = JSON.parse(await res.text());
+            if (json && json.success && Array.isArray(json.data) && json.data.length) return json.data;
+        } catch (e) {}
+        try {
+            const res = await fetch('assets/data/db.json?_=' + Date.now(), { cache: 'no-store' });
+            if (res.ok) {
+                const json = await res.json();
+                if (json && Array.isArray(json.articles) && json.articles.length) return json.articles;
+            }
+        } catch (e) {}
+        return typeof ARTICLES !== 'undefined' && Array.isArray(ARTICLES) ? ARTICLES : [];
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
         const container = document.getElementById('article-container');
-        
-        if (!ARTICLES) {
+
+        const list = await loadArticlesList();
+        if (!list.length) {
             container.innerHTML = '<p>Lỗi tải dữ liệu bài viết.</p>';
             return;
         }
-        
-        const article = ARTICLES.find(a => a.id === id) || ARTICLES[0]; // default to first if not found
-        
+
+        const article = list.find(a =>
+            String(a.id) === String(id) ||
+            String(a.id) === ('article-' + id) ||
+            ('article-' + a.id) === String(id)
+        ) || list[0];
+
         if (article) {
             document.title = article.title + " — CAA";
-            
-            // Render
-            let contentHtml = article.content;
-            
+            const img = article.image_url || article.image || '';
+            const contentHtml = article.content || '';
+            let sapo = article.description || '';
+            if (!sapo && contentHtml) {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = contentHtml;
+                const sapoEl = tmp.querySelector('.sc-longform-header-sapo, .block-sc-sapo');
+                if (sapoEl) sapo = sapoEl.textContent.trim();
+            }
+            const dateStr = article.created_at
+                ? article.created_at.split(' ')[0].split('-').reverse().join('/')
+                : '16/09/2026';
+
             container.innerHTML = `
                 <a href="news.html" class="btn btn-ghost btn-sm" style="margin-bottom: var(--s-lg);">← Quay lại Tin tức</a>
                 <h1 class="article-title">${article.title}</h1>
                 <div class="article-meta" style="display: flex; gap: var(--s-sm); align-items: center; margin-bottom: var(--s-xl); color: var(--c-ink-3); font-size: var(--t-sm);">
                     <span><strong>Theo CAA News</strong></span>
                     <span>&bull;</span>
-                    <span>16/09/2026</span>
+                    <span>${dateStr}</span>
                 </div>
-                <p class="article-sapo">${article.description}</p>
-                ${article.image ? `<img src="${article.image}" alt="${article.title}" class="article-hero-img" />` : ''}
+                ${sapo ? `<p class="article-sapo">${sapo}</p>` : ''}
+                ${img ? `<img src="${img}" alt="${article.title}" class="article-hero-img" />` : ''}
                 <div class="article-body">
                     ${contentHtml}
                 </div>

@@ -3,184 +3,997 @@
 <head>
   <meta charset="UTF-8" />
   <title>CAA CMS - Hệ thống Quản trị</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="assets/css/tokens.css" />
   <link rel="stylesheet" href="assets/css/styles.min.css" />
   <style>
-    body { background: var(--c-bg-2); margin: 0; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
-    .cms-sidebar { width: 280px; background: var(--c-ink); color: white; display: flex; flex-direction: column; }
-    .cms-brand { padding: 1.5rem; font-size: 1.25rem; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .cms-menu { flex: 1; padding: 1rem 0; overflow-y: auto; }
-    .cms-menu-item { padding: 1rem 1.5rem; display: block; color: rgba(255,255,255,0.7); text-decoration: none; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
-    .cms-menu-item:hover { background: rgba(255,255,255,0.05); color: white; }
-    .cms-menu-item.active { background: rgba(255,255,255,0.1); color: var(--c-red); border-left-color: var(--c-red); font-weight: bold; }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { background: #f4f5f7; margin: 0; font-family: 'Inter', sans-serif; display: flex; height: 100vh; overflow: hidden; font-size: 14px; }
+
+    /* SIDEBAR */
+    .cms-sidebar { width: 260px; background: #1a1a2e; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+    .cms-brand { padding: 1.25rem 1.5rem; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 0.75rem; }
+    .cms-brand-dot { width: 10px; height: 10px; background: var(--c-red, #c0392b); border-radius: 50%; }
+    .cms-nav-group { padding: 0.75rem 1rem 0; font-size: 11px; letter-spacing: 0.08em; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 0.25rem; }
+    .cms-menu-item { padding: 0.7rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; color: rgba(255,255,255,0.6); cursor: pointer; transition: 0.15s; border-left: 3px solid transparent; border-radius: 0 6px 6px 0; margin: 2px 0.5rem 2px 0; }
+    .cms-menu-item:hover { background: rgba(255,255,255,0.06); color: white; }
+    .cms-menu-item.active { background: rgba(192,57,43,0.15); color: #e74c3c; border-left-color: #e74c3c; font-weight: 600; }
+    .cms-menu-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    /* MAIN */
     .cms-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .cms-header { height: 64px; background: white; border-bottom: 1px solid var(--c-border); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; }
-    .cms-content { flex: 1; overflow-y: auto; padding: 2rem; }
-    
-    /* Login Overlay for Admin */
-    .cms-login-overlay { position: fixed; inset: 0; background: var(--c-ink); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-    .cms-login-box { background: white; padding: 3rem; border-radius: var(--r-md); width: 100%; max-width: 400px; text-align: center; }
+    .cms-header { height: 60px; background: white; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; gap: 1rem; }
+    .cms-header-title { font-weight: 700; font-size: 1rem; color: #111; }
+    .cms-user-info { display: flex; align-items: center; gap: 0.75rem; font-size: 13px; color: #555; }
+    .cms-avatar { width: 32px; height: 32px; background: #c0392b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+    .cms-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+
+    /* PANELS */
+    .cms-panel { display: none; }
+    .cms-panel.active { display: block; }
+
+    /* KPI CARDS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .kpi-card { background: white; border-radius: 10px; padding: 1.25rem 1.5rem; border: 1px solid #e5e7eb; }
+    .kpi-num { font-size: 2rem; font-weight: 800; color: #111; display: block; }
+    .kpi-label { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .kpi-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+    /* TABLES */
+    .table-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; overflow: hidden; }
+    .table-card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; }
+    .table-card-title { font-weight: 700; color: #111; }
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table thead th { background: #f9fafb; padding: 0.625rem 1rem; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb; }
+    .admin-table tbody td { padding: 0.75rem 1rem; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: middle; }
+    .admin-table tbody tr:last-child td { border-bottom: none; }
+    .admin-table tbody tr:hover td { background: #f9fafb; }
+
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-yellow { background: #fef3c7; color: #92400e; }
+    .badge-red { background: #fee2e2; color: #991b1b; }
+    .badge-gray { background: #f3f4f6; color: #6b7280; }
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+
+    /* BUTTONS */
+    .btn-xs { padding: 4px 10px; font-size: 12px; border-radius: 5px; cursor: pointer; border: none; font-weight: 500; transition: 0.15s; }
+    .btn-xs-primary { background: #c0392b; color: white; }
+    .btn-xs-primary:hover { background: #a93226; }
+    .btn-xs-ghost { background: transparent; color: #6b7280; border: 1px solid #e5e7eb; }
+    .btn-xs-ghost:hover { background: #f3f4f6; color: #111; }
+    .btn-xs-danger { background: transparent; color: #c0392b; border: 1px solid #fecaca; }
+    .btn-xs-danger:hover { background: #fee2e2; }
+    .action-group { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+
+    /* FORM CARD */
+    .form-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 1.5rem; margin-bottom: 1rem; }
+    .form-card h4 { margin: 0 0 1rem; font-size: 0.95rem; color: #111; }
+    .form-grid { display: grid; gap: 0.75rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .form-label { font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 4px; display: block; }
+    .form-input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; outline: none; }
+    .form-input:focus { border-color: #c0392b; }
+    .form-textarea { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; min-height: 200px; resize: vertical; outline: none; font-family: inherit; }
+    .form-textarea:focus { border-color: #c0392b; }
+    .form-select { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; outline: none; background: white; }
+
+    /* LOGIN OVERLAY */
+    .cms-login-overlay { position: fixed; inset: 0; background: #1a1a2e; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .cms-login-box { background: white; padding: 2.5rem; border-radius: 12px; width: 100%; max-width: 380px; }
+    .cms-login-box h2 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+    .cms-login-box p { margin: 0 0 1.5rem; color: #6b7280; font-size: 13px; }
+    .cms-login-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; font-size: 12px; color: #9ca3af; }
+
+    /* LOADING */
+    .loading-row td { text-align: center; color: #9ca3af; padding: 2rem; }
+
+    /* MODAL */
+    .cms-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .cms-modal { background: white; border-radius: 12px; padding: 1.5rem; max-width: 500px; width: 90%; }
+    .cms-modal h3 { margin: 0 0 1rem; }
   </style>
 </head>
 <body>
 
-  <!-- ADMIN LOGIN OVERLAY -->
+  <!-- LOGIN OVERLAY -->
   <div class="cms-login-overlay" id="admin-login-overlay">
     <div class="cms-login-box">
-      <h2 style="margin-bottom: 1rem;">CAA CMS Panel</h2>
-      <p style="color: var(--c-ink-3); margin-bottom: 2rem;">Vui lòng đăng nhập bằng tài khoản Super Admin.</p>
-      <input type="email" class="field-input" placeholder="admin@caa.org.vn" style="margin-bottom: 1rem;" />
-      <input type="password" class="field-input" placeholder="Mật khẩu" style="margin-bottom: 1.5rem;" />
-      <button class="btn btn-primary btn-wide" style="justify-content: center;" onclick="document.getElementById('admin-login-overlay').style.display='none'">Đăng nhập Admin</button>
-      <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px dashed var(--c-border);">
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('admin-login-overlay').style.display='none'">[Test] Bỏ qua đăng nhập</button>
+      <div style="width:40px;height:40px;background:#c0392b;border-radius:10px;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:center;">
+        <span style="color:white;font-weight:800;font-size:1.1rem;">C</span>
+      </div>
+      <h2>CAA CMS</h2>
+      <p>Đăng nhập bằng tài khoản Super Admin để tiếp tục.</p>
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="admin-login-email" placeholder="admin@caa.org.vn" />
+        </div>
+        <div>
+          <label class="form-label">Mật khẩu</label>
+          <input type="password" class="form-input" id="admin-login-pass" placeholder="••••••••" />
+        </div>
+        <button class="btn btn-primary" id="admin-login-btn" style="width:100%;justify-content:center;margin-top:0.25rem;">Đăng nhập</button>
+        <p id="admin-login-error" style="color:#c0392b;font-size:12px;margin:0;text-align:center;display:none;"></p>
+      </div>
+      <div class="cms-login-footer">
+        <span>CAA CMS v1.0</span>
+        <a href="index.html" style="color:#6b7280;text-decoration:none;">← Về trang chủ</a>
       </div>
     </div>
   </div>
 
   <!-- SIDEBAR -->
   <aside class="cms-sidebar">
-    <div class="cms-brand">Quản trị CAA</div>
-    <nav class="cms-menu" id="cms-nav">
-      <div class="cms-menu-item active" data-tab="overview">Tổng quan</div>
-      <div class="cms-menu-item" data-tab="requests">Yêu cầu gia nhập</div>
-      <div class="cms-menu-item" data-tab="contacts">Hộp thư liên hệ</div>
-      <div class="cms-menu-item" data-tab="users">Tài khoản & Phân quyền</div>
-      <div class="cms-menu-item" data-tab="content">Quản lý CMS (Web)</div>
-      <div class="cms-menu-item" data-tab="media">Thư viện Media</div>
+    <div class="cms-brand">
+      <div class="cms-brand-dot"></div>
+      CAA Quản trị
+    </div>
+    <nav style="flex:1;overflow-y:auto;padding:1rem 0;">
+      <div class="cms-nav-group">Hệ thống</div>
+      <div class="cms-menu-item active" data-tab="overview"><span class="icon">📊</span> Tổng quan</div>
+
+      <div class="cms-nav-group" style="margin-top:0.75rem;">Tiếp nhận</div>
+      <div class="cms-menu-item" data-tab="requests"><span class="icon">📋</span> Yêu cầu gia nhập <span id="badge-requests" style="margin-left:auto;background:#c0392b;color:white;font-size:10px;padding:1px 6px;border-radius:99px;display:none;"></span></div>
+      <div class="cms-menu-item" data-tab="contacts"><span class="icon">✉️</span> Hộp thư liên hệ <span id="badge-contacts" style="margin-left:auto;background:#c0392b;color:white;font-size:10px;padding:1px 6px;border-radius:99px;display:none;"></span></div>
+
+      <div class="cms-nav-group" style="margin-top:0.75rem;">Quản lý</div>
+      <div class="cms-menu-item" data-tab="users"><span class="icon">👥</span> Tài khoản & Quyền</div>
+        <div class="cms-menu-item" data-tab="directory"><span class="icon">🏢</span> Danh bạ Hội viên</div>
+        <div class="cms-menu-item" data-tab="events"><span class="icon">📅</span> Sự kiện</div>
+        <div class="cms-menu-item" data-tab="docs"><span class="icon">📂</span> Tài liệu</div>
+        <div class="cms-menu-item" data-tab="articles"><span class="icon">📝</span> Bài viết & Tin tức</div>
     </nav>
-    <div style="padding: 1rem;">
-      <button class="btn btn-ghost" style="width: 100%; color: white; border: 1px solid rgba(255,255,255,0.2);" onclick="window.location.href='index.html'">Quay về Website</button>
+    <div style="padding:1rem;border-top:1px solid rgba(255,255,255,0.08);">
+      <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:0.5rem;" id="cms-logged-as">Đang tải...</div>
+      <button onclick="cmsLogout()" style="width:100%;padding:0.5rem;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);border:none;border-radius:6px;cursor:pointer;font-size:13px;">Đăng xuất</button>
     </div>
   </aside>
 
-  <!-- MAIN AREA -->
+  <!-- MAIN -->
   <main class="cms-main">
     <header class="cms-header">
-      <h2 id="cms-page-title" style="margin:0; font-size: 1.25rem;">Tổng quan Hệ thống</h2>
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <span>Chào, Super Admin</span>
-        <img src="https://ui-avatars.com/api/?name=Admin&background=random" style="width: 32px; border-radius: 50%;" />
+      <div class="cms-header-title" id="cms-page-title">Tổng quan</div>
+      <div class="cms-user-info">
+        <div class="cms-avatar" id="cms-avatar-initial">A</div>
+        <span id="cms-admin-email">Admin</span>
       </div>
     </header>
-    
+
     <div class="cms-content">
-      
-      <!-- Panel: OVERVIEW -->
-      <div class="cms-panel" id="panel-overview">
-        <div class="admin-kpi-grid">
-          <article class="kpi-card"><span class="kpi-num tnum">12</span><span class="kpi-label">Yêu cầu chờ duyệt</span></article>
-          <article class="kpi-card"><span class="kpi-num tnum">148</span><span class="kpi-label">Hội viên chính thức</span></article>
-          <article class="kpi-card"><span class="kpi-num tnum">5</span><span class="kpi-label">Thư liên hệ mới</span></article>
+
+      <!-- PANEL: OVERVIEW -->
+      <div class="cms-panel active" id="panel-overview">
+        <div class="kpi-grid" id="kpi-grid">
+          <div class="kpi-card"><div class="kpi-icon">📋</div><span class="kpi-num" id="kpi-pending">–</span><div class="kpi-label">Yêu cầu chờ duyệt</div></div>
+          <div class="kpi-card"><div class="kpi-icon">👥</div><span class="kpi-num" id="kpi-members">–</span><div class="kpi-label">Hội viên chính thức</div></div>
+          <div class="kpi-card"><div class="kpi-icon">✉️</div><span class="kpi-num" id="kpi-contacts">–</span><div class="kpi-label">Thư chưa đọc</div></div>
+          <div class="kpi-card"><div class="kpi-icon">📝</div><span class="kpi-num" id="kpi-articles">–</span><div class="kpi-label">Bài viết</div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-card-header"><span class="table-card-title">Chào mừng trở lại!</span></div>
+          <div style="padding:1.5rem;color:#6b7280;">
+            <p>Hệ thống quản trị CAA đang hoạt động bình thường. Sử dụng menu bên trái để quản lý nội dung và thành viên.</p>
+            <p style="font-size:12px;">Các số liệu trên được cập nhật theo thời gian thực từ cơ sở dữ liệu.</p>
+          </div>
         </div>
       </div>
 
-      <!-- Panel: REQUESTS -->
-      <div class="cms-panel" id="panel-requests" style="display:none;">
-        <h3 style="margin-bottom: 1rem;">Yêu cầu gia nhập</h3>
-        <div class="admin-table-wrap">
+      <!-- PANEL: REQUESTS -->
+      <div class="cms-panel" id="panel-requests">
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-card-title">Yêu cầu gia nhập</span>
+            <div style="display:flex;gap:0.5rem;">
+              <select class="form-select" style="width:auto;" id="filter-requests">
+                <option value="">Tất cả</option>
+                <option value="pending">Chờ duyệt</option>
+                <option value="approved">Đã duyệt</option>
+                <option value="rejected">Từ chối</option>
+              </select>
+            </div>
+          </div>
           <table class="admin-table">
-            <thead><tr><th>Doanh nghiệp</th><th>Lĩnh vực</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
-            <tbody>
-              <tr>
-                <td>Truyền thông Minh An</td><td>Digital</td><td><span class="badge badge-yellow">Chờ duyệt</span></td>
-                <td class="table-action-group">
-                  <button class="btn btn-sm btn-primary">Duyệt</button>
-                  <button class="btn btn-sm btn-ghost" style="color: var(--c-red);">Từ chối</button>
-                </td>
-              </tr>
-            </tbody>
+            <thead><tr><th>Công ty</th><th>Email</th><th>SĐT</th><th>Lĩnh vực</th><th>Trạng thái</th><th>Ngày nộp</th><th>Hành động</th></tr></thead>
+            <tbody id="requests-tbody"><tr class="loading-row"><td colspan="7">⏳ Đang tải...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Panel: CONTACTS -->
-      <div class="cms-panel" id="panel-contacts" style="display:none;">
-        <h3 style="margin-bottom: 1rem;">Hộp thư liên hệ</h3>
-        <div class="admin-table-wrap">
+      <!-- PANEL: CONTACTS -->
+      <div class="cms-panel" id="panel-contacts">
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-card-title">Hộp thư liên hệ</span>
+          </div>
           <table class="admin-table">
-            <thead><tr><th>Ngày gửi</th><th>Người gửi</th><th>Chủ đề</th><th>Hành động</th></tr></thead>
-            <tbody>
-              <tr>
-                <td class="tnum">19/09 09:30</td><td>Nguyễn Văn A</td><td>Hỏi thủ tục</td>
-                <td class="table-action-group"><button class="btn btn-sm btn-secondary">Đọc</button></td>
-              </tr>
-            </tbody>
+            <thead><tr><th>Ngày gửi</th><th>Người gửi</th><th>Email</th><th>Chủ đề</th><th>Nội dung</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+            <tbody id="contacts-tbody"><tr class="loading-row"><td colspan="7">⏳ Đang tải...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Panel: USERS -->
-      <div class="cms-panel" id="panel-users" style="display:none;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-          <h3>Quản lý Tài khoản</h3>
-          <button class="btn btn-sm btn-primary">+ Cấp tài khoản mới</button>
+      <!-- PANEL: USERS -->
+      <div class="cms-panel" id="panel-users">
+        <div class="form-card" style="margin-bottom:1rem;">
+          <h4>➕ Cấp tài khoản mới</h4>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="new-user-email" placeholder="email@doanhnghiep.vn" />
+            </div>
+            <div>
+              <label class="form-label">Vai trò</label>
+              <select class="form-select" id="new-user-role">
+                <option value="member">Hội viên</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:0.75rem;font-size:12px;color:#6b7280;">Mật khẩu mặc định <strong>123456</strong>, người dùng có thể đặt lại sau.</div>
+          <button class="btn btn-primary btn-sm" style="margin-top:0.75rem;" onclick="createUser()">Tạo tài khoản</button>
         </div>
-        <div class="admin-table-wrap">
+
+        <div class="table-card">
+          <div class="table-card-header"><span class="table-card-title">Danh sách tài khoản</span></div>
           <table class="admin-table">
-            <thead><tr><th>Email User</th><th>Vai trò</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
-            <tbody>
-              <tr>
-                <td>ceo@minhan.vn</td><td>Hội viên</td><td><span class="badge badge-green">Hoạt động</span></td>
-                <td class="table-action-group">
-                  <button class="btn btn-sm btn-secondary">Đổi MK</button>
-                  <button class="btn btn-sm btn-ghost" style="color:var(--c-red);">Xóa</button>
-                </td>
-              </tr>
-            </tbody>
+            <thead><tr><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Ngày tạo</th><th>Hành động</th></tr></thead>
+            <tbody id="users-tbody"><tr class="loading-row"><td colspan="5">⏳ Đang tải...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Panel: CONTENT -->
-      <div class="cms-panel" id="panel-content" style="display:none;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-          <h3>Quản lý Bài viết</h3>
-          <button class="btn btn-sm btn-primary">+ Viết bài mới</button>
+      <!-- PANEL: ARTICLES -->
+      <div class="cms-panel" id="panel-articles">
+        <div class="form-card">
+          <h4 id="article-form-title">✏️ Viết bài mới</h4>
+          <input type="hidden" id="article-edit-id" value="" />
+          <div class="form-row">
+            <div>
+              <label class="form-label">Tiêu đề</label>
+              <input type="text" class="form-input" id="article-title" placeholder="Tiêu đề bài viết..." />
+            </div>
+            <div>
+              <label class="form-label">Chuyên mục</label>
+              <select class="form-select" id="article-category">
+                <option value="tin-nganh">Tin Ngành</option>
+                <option value="su-kien">Sự kiện</option>
+                <option value="noi-bat">Nổi bật</option>
+                <option value="hoi-vien">Hội viên</option>
+              </select>
+            </div>
+          </div>
+          
+          <div style="margin-top:0.75rem;">
+            <label class="form-label">Ảnh đại diện (Tải lên)</label>
+            <input type="file" class="form-input" id="article-image" accept="image/*" />
+          </div>
+          <div style="margin-top:0.75rem;">
+            <label class="form-label">Nội dung</label>
+            <textarea class="form-textarea" id="article-content" placeholder="Nội dung bài viết..."></textarea>
+          </div>
+          <div style="display:flex;gap:0.5rem;margin-top:0.75rem;align-items:center;">
+            <select class="form-select" style="width:auto;" id="article-status">
+              <option value="published">Đăng ngay</option>
+              <option value="draft">Lưu nháp</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="saveArticle()">💾 Lưu bài</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetArticleForm()">Hủy</button>
+          </div>
         </div>
-        <div class="admin-table-wrap">
+
+        <div class="table-card">
+          <div class="table-card-header"><span class="table-card-title">Danh sách bài viết</span></div>
           <table class="admin-table">
-            <thead><tr><th>Tiêu đề</th><th>Chuyên mục</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
-            <tbody>
-              <tr>
-                <td>OOH bùng nổ cuối năm 2026</td><td>Tin Ngành</td><td><span class="badge badge-green">Đã đăng</span></td>
-                <td class="table-action-group"><button class="btn btn-sm btn-secondary">Sửa</button></td>
-              </tr>
-            </tbody>
+            <thead><tr><th>Tiêu đề</th><th>Chuyên mục</th><th>Trạng thái</th><th>Ngày đăng</th><th>Hành động</th></tr></thead>
+            <tbody id="articles-tbody"><tr class="loading-row"><td colspan="5">⏳ Đang tải...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Panel: MEDIA -->
-      <div class="cms-panel" id="panel-media" style="display:none;">
-        <h3 style="margin-bottom: 1rem;">Thư viện Media</h3>
-        <label class="upload-drop" style="background: white; border: 2px dashed var(--c-border); padding: 3rem; text-align: center; border-radius: var(--r-md); cursor: pointer; display: block;">
-          <span>Kéo thả hoặc <strong>chọn file</strong> để tải lên</span>
-        </label>
-      </div>
+    
+        <!-- PANEL: DIRECTORY -->
+        <div class="cms-panel" id="panel-directory">
+          <div class="form-card" style="margin-bottom:1rem;">
+            <h4 id="dir-form-title">➕ Thêm hội viên vào danh bạ</h4>
+            <input type="hidden" id="dir-edit-id" value="" />
+            <div class="form-row">
+              <div>
+                <label class="form-label">Tên công ty</label>
+                <input type="text" class="form-input" id="dir-name" required />
+              </div>
+              <div>
+                  <label class="form-label">Tên viết tắt (hoặc tải Logo)</label>
+                  <div style="display:flex; gap:0.5rem;">
+                      <input type="text" class="form-input" id="dir-short" placeholder="Vd: BH" style="width: 80px;" />
+                      <input type="file" class="form-input" id="dir-logo" accept="image/*" style="flex:1; padding: 4px;" />
+                  </div>
+                </div>
+            </div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Email liên hệ</label>
+                <input type="email" class="form-input" id="dir-email" />
+              </div>
+              <div>
+                <label class="form-label">Website</label>
+                <input type="url" class="form-input" id="dir-web" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Lĩnh vực (Category)</label>
+                <input type="text" class="form-input" id="dir-cat" />
+              </div>
+              <div>
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" id="dir-status">
+                  <option value="active">Hoạt động</option>
+                  <option value="inactive">Tạm ẩn</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:1rem;text-align:right;">
+              <button class="btn btn-ghost" id="btn-cancel-dir" style="display:none;" onclick="resetDirForm()">Hủy</button>
+              <button class="btn btn-primary" id="btn-save-dir" onclick="saveDir()">Lưu hội viên</button>
+            </div>
+          </div>
+          <div class="table-card">
+            <div class="table-card-header"><span class="table-card-title">Danh bạ B2B</span></div>
+            <table class="admin-table">
+              <thead><tr><th>Công ty</th><th>Viết tắt</th><th>Email</th><th>Lĩnh vực</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+              <tbody id="directory-tbody"><tr class="loading-row"><td colspan="6">Đang tải...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
 
-    </div>
+        <!-- PANEL: EVENTS -->
+        <div class="cms-panel" id="panel-events">
+          <div class="form-card" style="margin-bottom:1rem;">
+            <h4 id="ev-form-title">➕ Tạo sự kiện</h4>
+            <input type="hidden" id="ev-edit-id" value="" />
+            <div class="form-row">
+              <div>
+                <label class="form-label">Tên sự kiện</label>
+                <input type="text" class="form-input" id="ev-title" required />
+              </div>
+              <div>
+                <label class="form-label">Ngày (YYYY-MM-DD)</label>
+                <input type="date" class="form-input" id="ev-date" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Giờ</label>
+                <input type="text" class="form-input" id="ev-time" placeholder="VD: 14:00 - 17:00" />
+              </div>
+              <div>
+                <label class="form-label">Địa điểm</label>
+                <input type="text" class="form-input" id="ev-loc" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" id="ev-status">
+                  <option value="upcoming">Sắp diễn ra</option>
+                  <option value="completed">Đã kết thúc</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Link đăng ký (nếu có)</label>
+                <input type="url" class="form-input" id="ev-link" />
+              </div>
+            </div>
+            <div class="form-row" style="margin-top:0.75rem;">
+              <div>
+                <label class="form-label">Số lượng chỗ tối đa</label>
+                <input type="number" class="form-input" id="ev-capacity" placeholder="VD: 100" />
+              </div>
+              <div>
+                <label class="form-label">Số người đã đăng ký</label>
+                <input type="number" class="form-input" id="ev-registered" placeholder="VD: 0" />
+              </div>
+            </div>
+            <div style="margin-top:0.75rem;">
+              <label class="form-label">Chi tiết sự kiện (Mô tả)</label>
+              <textarea class="form-textarea" style="min-height:100px;" id="ev-desc" placeholder="Nội dung chi tiết..."></textarea>
+            </div>
+            <div style="margin-top:1rem;text-align:right;">
+              <button class="btn btn-ghost" id="btn-cancel-ev" style="display:none;" onclick="resetEvForm()">Hủy</button>
+              <button class="btn btn-primary" id="btn-save-ev" onclick="saveEvent()">Lưu sự kiện</button>
+            </div>
+          </div>
+          <div class="table-card">
+            <div class="table-card-header"><span class="table-card-title">Danh sách Sự kiện</span></div>
+            <table class="admin-table">
+              <thead><tr><th>Tên sự kiện</th><th>Ngày</th><th>Địa điểm</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+              <tbody id="events-tbody"><tr class="loading-row"><td colspan="5">Đang tải...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PANEL: DOCS -->
+        <div class="cms-panel" id="panel-docs">
+          <div class="form-card" style="margin-bottom:1rem;">
+            <h4 id="doc-form-title">➕ Thêm tài liệu</h4>
+            <input type="hidden" id="doc-edit-id" value="" />
+            <div class="form-row">
+              <div>
+                <label class="form-label">Tên tài liệu</label>
+                <input type="text" class="form-input" id="doc-title" required />
+              </div>
+              <div>
+                <label class="form-label">Danh mục</label>
+                <select class="form-select" id="doc-cat">
+                  <option value="Quy định - Pháp lý">Quy định - Pháp lý</option>
+                  <option value="Biểu mẫu - Hợp đồng">Biểu mẫu - Hợp đồng</option>
+                  <option value="Báo cáo - Chuyên đề">Báo cáo - Chuyên đề</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Đường dẫn file (URL)</label>
+                <input type="url" class="form-input" id="doc-url" required placeholder="https://..." />
+              </div>
+              <div>
+                <label class="form-label">Quyền truy cập</label>
+                <select class="form-select" id="doc-access">
+                  <option value="public">Công khai</option>
+                  <option value="member">Hội viên</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:1rem;text-align:right;">
+              <button class="btn btn-ghost" id="btn-cancel-doc" style="display:none;" onclick="resetDocForm()">Hủy</button>
+              <button class="btn btn-primary" id="btn-save-doc" onclick="saveDoc()">Lưu tài liệu</button>
+            </div>
+          </div>
+          <div class="table-card">
+            <div class="table-card-header"><span class="table-card-title">Kho tài liệu</span></div>
+            <table class="admin-table">
+              <thead><tr><th>Tên tài liệu</th><th>Danh mục</th><th>Truy cập</th><th>Hành động</th></tr></thead>
+              <tbody id="docs-tbody"><tr class="loading-row"><td colspan="4">Đang tải...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /.cms-content -->
   </main>
 
-  <script>
-    // Tab switching logic for standalone CMS
-    const menuItems = document.querySelectorAll('.cms-menu-item');
-    const panels = document.querySelectorAll('.cms-panel');
-    const pageTitle = document.getElementById('cms-page-title');
+<script>
+const API = 'api/admin.php';
+const AUTH_API = 'api/auth.php';
 
-    menuItems.forEach(item => {
-      item.addEventListener('click', () => {
-        menuItems.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        
-        const tab = item.dataset.tab;
-        panels.forEach(p => p.style.display = 'none');
-        document.getElementById('panel-' + tab).style.display = 'block';
-        
-        pageTitle.textContent = item.textContent;
-      });
-    });
-  </script>
+// ── HELPER ────────────────────────────────────────────────
+async function safeJsonFetch(url, options) {
+  try {
+    const res = await fetch(url, options);
+    const text = await res.text();
+    return JSON.parse(text);
+  } catch (e) {
+    return {
+      success: false,
+      staticHost: true,
+      message: 'Admin CMS yêu cầu máy chủ hỗ trợ PHP & MySQL (GitHub Pages chỉ phục vụ web tĩnh).'
+    };
+  }
+}
+
+async function api(action, data = {}, method = 'POST') {
+  const fd = new FormData();
+  fd.append('action', action);
+  for (const k in data) fd.append(k, data[k]);
+
+  const url = method === 'GET' ? `${API}?action=${action}` : API;
+  return safeJsonFetch(url, { method, body: method === 'POST' ? fd : null });
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function statusBadge(s) {
+  const map = {
+    pending: '<span class="badge badge-yellow">Chờ duyệt</span>',
+    approved: '<span class="badge badge-green">Đã duyệt</span>',
+    rejected: '<span class="badge badge-red">Từ chối</span>',
+    unread: '<span class="badge badge-red">Chưa đọc</span>',
+    read: '<span class="badge badge-gray">Đã đọc</span>',
+    resolved: '<span class="badge badge-green">Đã xử lý</span>',
+    active: '<span class="badge badge-green">Hoạt động</span>',
+    inactive: '<span class="badge badge-gray">Chưa kích hoạt</span>',
+    published: '<span class="badge badge-green">Đã đăng</span>',
+    draft: '<span class="badge badge-gray">Nháp</span>',
+  };
+  return map[s] || `<span class="badge badge-gray">${s}</span>`;
+}
+
+function notify(msg, ok = true) {
+  const el = document.createElement('div');
+  el.textContent = msg;
+  el.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;padding:0.75rem 1.25rem;background:${ok ? '#166534' : '#991b1b'};color:white;border-radius:8px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,0.2);`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ── AUTH ─────────────────────────────────────────────────
+async function checkAdminSession() {
+  const fd = new FormData();
+  fd.append('action', 'check_session');
+  const res = await safeJsonFetch(AUTH_API, { method: 'POST', body: fd });
+  if (res.staticHost) {
+    const errEl = document.getElementById('admin-login-error');
+    if (errEl) {
+      errEl.textContent = res.message;
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+  if (res.success && res.role === 'admin') {
+    document.getElementById('admin-login-overlay').style.display = 'none';
+    document.getElementById('cms-admin-email').textContent = res.email;
+    document.getElementById('cms-avatar-initial').textContent = res.email[0].toUpperCase();
+    document.getElementById('cms-logged-as').textContent = res.email;
+    loadDashboard();
+  }
+}
+
+document.getElementById('admin-login-btn').onclick = async () => {
+  const email = document.getElementById('admin-login-email').value;
+  const pass  = document.getElementById('admin-login-pass').value;
+  const errEl = document.getElementById('admin-login-error');
+  const btn   = document.getElementById('admin-login-btn');
+  btn.disabled = true; btn.textContent = 'Đang đăng nhập...';
+
+  const fd = new FormData();
+  fd.append('action', 'login');
+  fd.append('email', email);
+  fd.append('password', pass);
+  const res = await safeJsonFetch(AUTH_API, { method: 'POST', body: fd });
+
+  if (res.success && res.role === 'admin') {
+    document.getElementById('admin-login-overlay').style.display = 'none';
+    document.getElementById('cms-admin-email').textContent = res.email;
+    document.getElementById('cms-avatar-initial').textContent = res.email[0].toUpperCase();
+    document.getElementById('cms-logged-as').textContent = res.email;
+    errEl.style.display = 'none';
+    loadDashboard();
+  } else {
+    errEl.textContent = res.success ? 'Tài khoản này không có quyền Admin.' : res.message;
+    errEl.style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = 'Đăng nhập';
+};
+
+async function cmsLogout() {
+  const fd = new FormData(); fd.append('action', 'logout');
+  await fetch(AUTH_API, { method: 'POST', body: fd });
+  window.location.reload();
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────
+const tabLoaders = { overview: loadDashboard, requests: loadRequests, contacts: loadContacts, users: loadUsers, articles: loadArticles, events: loadEvents, docs: loadDocs, directory: loadDirectory };
+document.querySelectorAll('.cms-menu-item[data-tab]').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.cms-menu-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.cms-panel').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    const tab = item.dataset.tab;
+    document.getElementById('panel-' + tab).classList.add('active');
+    document.getElementById('cms-page-title').textContent = item.textContent.trim();
+    if (tabLoaders[tab]) tabLoaders[tab]();
+  });
+});
+
+// ── OVERVIEW ──────────────────────────────────────────────
+async function loadDashboard() {
+  const res = await api('get_dashboard_stats', {}, 'GET');
+  if (!res.success) return;
+  document.getElementById('kpi-pending').textContent  = res.stats.pending_apps;
+  document.getElementById('kpi-members').textContent  = res.stats.total_members;
+  document.getElementById('kpi-contacts').textContent = res.stats.unread_contacts;
+  document.getElementById('kpi-articles').textContent = res.stats.total_articles;
+
+  // Update sidebar badges
+  const br = document.getElementById('badge-requests');
+  const bc = document.getElementById('badge-contacts');
+  if (res.stats.pending_apps > 0) { br.textContent = res.stats.pending_apps; br.style.display = 'inline'; } else { br.style.display = 'none'; }
+  if (res.stats.unread_contacts > 0) { bc.textContent = res.stats.unread_contacts; bc.style.display = 'inline'; } else { bc.style.display = 'none'; }
+}
+
+// ── REQUESTS ──────────────────────────────────────────────
+async function loadRequests() {
+  const res = await api('get_applications', {}, 'GET');
+  const tbody = document.getElementById('requests-tbody');
+  if (!res.success || !res.data.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="7">Không có dữ liệu.</td></tr>'; return; }
+
+  const filterVal = document.getElementById('filter-requests').value;
+  const rows = res.data.filter(r => !filterVal || r.status === filterVal);
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><strong>${r.company_name}</strong></td>
+      <td>${r.email}</td>
+      <td>${r.phone || '—'}</td>
+      <td>${r.category || '—'}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="font-size:12px;color:#9ca3af;">${fmtDate(r.created_at)}</td>
+      <td>
+        <div class="action-group">
+          ${r.status === 'pending' ? `
+            <button class="btn-xs btn-xs-primary" onclick="approveApp(${r.id})">✓ Duyệt</button>
+            <button class="btn-xs btn-xs-ghost" onclick="rejectApp(${r.id})">✗ Từ chối</button>
+          ` : ''}
+          <button class="btn-xs btn-xs-danger" onclick="deleteApp(${r.id})">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+document.getElementById('filter-requests').onchange = loadRequests;
+
+async function approveApp(id) { const r = await api('approve_application', { id }); notify(r.message, r.success); loadRequests(); loadDashboard(); }
+async function rejectApp(id)  { const r = await api('reject_application',  { id }); notify(r.message, r.success); loadRequests(); loadDashboard(); }
+async function deleteApp(id)  { if (!confirm('Xóa hồ sơ này?')) return; const r = await api('delete_application', { id }); notify(r.message, r.success); loadRequests(); }
+
+// ── CONTACTS ─────────────────────────────────────────────
+async function loadContacts() {
+  const res = await api('get_contacts', {}, 'GET');
+  const tbody = document.getElementById('contacts-tbody');
+  if (!res.success || !res.data.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="7">Hộp thư trống.</td></tr>'; return; }
+
+  tbody.innerHTML = res.data.map(c => `
+    <tr style="${c.status === 'unread' ? 'font-weight:600;' : ''}">
+      <td style="font-size:12px;color:#9ca3af;white-space:nowrap;">${fmtDate(c.created_at)}</td>
+      <td>${c.name}</td>
+      <td style="font-size:12px;">${c.email}</td>
+      <td>${c.subject || '—'}</td>
+      <td style="font-size:12px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${c.message}">${c.message}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td>
+        <div class="action-group">
+          ${c.status === 'unread' ? `<button class="btn-xs btn-xs-ghost" onclick="markRead(${c.id})">👁 Đọc</button>` : ''}
+          <button class="btn-xs btn-xs-danger" onclick="deleteContact(${c.id})">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function markRead(id)       { await api('mark_contact_read', { id }); loadContacts(); loadDashboard(); }
+async function deleteContact(id)  { if (!confirm('Xóa thư này?')) return; await api('delete_contact', { id }); notify('Đã xóa thư.'); loadContacts(); }
+
+// ── USERS ─────────────────────────────────────────────────
+async function loadUsers() {
+  const res = await api('get_users', {}, 'GET');
+  const tbody = document.getElementById('users-tbody');
+  if (!res.success || !res.data.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="5">Không có tài khoản.</td></tr>'; return; }
+
+  tbody.innerHTML = res.data.map(u => `
+    <tr>
+      <td>${u.email}</td>
+      <td>
+        <select class="form-select" style="padding:3px 6px;font-size:12px;width:auto;" onchange="updateRole(${u.id}, this.value)">
+          <option value="member" ${u.role === 'member' ? 'selected' : ''}>Hội viên</option>
+          <option value="admin"  ${u.role === 'admin'  ? 'selected' : ''}>Admin</option>
+        </select>
+      </td>
+      <td>${statusBadge(u.status)}</td>
+      <td style="font-size:12px;color:#9ca3af;">${fmtDate(u.created_at)}</td>
+      <td>
+        <div class="action-group">
+          <button class="btn-xs btn-xs-ghost" onclick="resetPwd(${u.id})">🔑 Đặt lại MK</button>
+          <button class="btn-xs btn-xs-danger" onclick="deleteUser(${u.id})">🗑 Xóa</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function createUser() {
+  const email = document.getElementById('new-user-email').value;
+  const role  = document.getElementById('new-user-role').value;
+  if (!email) { notify('Vui lòng nhập email.', false); return; }
+  const r = await api('create_user', { email, role });
+  notify(r.message, r.success);
+  if (r.success) { document.getElementById('new-user-email').value = ''; loadUsers(); }
+}
+async function updateRole(id, role) { const r = await api('update_user_role', { id, role }); notify(r.message, r.success); }
+async function resetPwd(id) {
+  const p = prompt('Mật khẩu mới (để trống = 123456):') || '123456';
+  const r = await api('reset_user_password', { id, new_password: p });
+  notify(r.message, r.success);
+}
+async function deleteUser(id) { if (!confirm('Xóa tài khoản này?')) return; const r = await api('delete_user', { id }); notify(r.message, r.success); loadUsers(); }
+
+// ── ARTICLES ─────────────────────────────────────────────
+async function loadArticles() {
+  const res = await api('get_articles', {}, 'GET');
+  const tbody = document.getElementById('articles-tbody');
+  if (!res.success || !res.data.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="5">Chưa có bài viết.</td></tr>'; return; }
+
+  tbody.innerHTML = res.data.map(a => `
+    <tr>
+      <td><strong>${a.title}</strong></td>
+      <td><span class="badge badge-blue">${a.category || '—'}</span></td>
+      <td>${statusBadge(a.status)}</td>
+      <td style="font-size:12px;color:#9ca3af;">${fmtDate(a.created_at)}</td>
+      <td>
+        <div class="action-group">
+          <button class="btn-xs btn-xs-ghost" onclick="editArticle(${a.id})">✏️ Sửa</button>
+          <button class="btn-xs btn-xs-danger" onclick="deleteArticle(${a.id})">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function editArticle(id) {
+  const res = await api(`get_article&id=${id}`, {}, 'GET');
+  if (!res.success) return;
+  const a = res.data;
+  document.getElementById('article-edit-id').value  = a.id;
+  document.getElementById('article-title').value    = a.title;
+  document.getElementById('article-category').value = a.category;
+  document.getElementById('article-content').value  = a.content;
+  document.getElementById('article-status').value   = a.status;
+  document.getElementById('article-form-title').textContent = '✏️ Chỉnh sửa bài viết';
+  document.querySelector('#panel-articles .form-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetArticleForm() {
+  document.getElementById('article-edit-id').value = '';
+  document.getElementById('article-title').value   = '';
+  document.getElementById('article-content').value = '';
+  document.getElementById('article-image').value = '';
+  document.getElementById('article-form-title').textContent = '✏️ Viết bài mới';
+}
+
+async function saveArticle() {
+  const id      = document.getElementById('article-edit-id').value;
+  const title   = document.getElementById('article-title').value;
+  const category= document.getElementById('article-category').value;
+  const content = document.getElementById('article-content').value;
+  const status  = document.getElementById('article-status').value;
+  const imageInput = document.getElementById('article-image');
+  const imageFile = imageInput.files.length > 0 ? imageInput.files[0] : null;
+
+  if (!title) { notify('Vui lòng nhập tiêu đề.', false); return; }
+
+  
+  const data = { title, category, content, status };
+  if (id) data.id = id;
+  if (imageFile) data.image = imageFile;
+
+  const r = await api(id ? 'update_article' : 'create_article', data);
+
+
+  notify(r.message, r.success);
+  if (r.success) { resetArticleForm(); loadArticles(); }
+}
+
+async function deleteArticle(id) {
+  if (!confirm('Xóa bài viết này?')) return;
+  const r = await api('delete_article', { id });
+  notify(r.message, r.success);
+  loadArticles();
+}
+
+// ── INIT ──────────────────────────────────────────────────
+
+// ── DIRECTORY ──────────────────────────────────────────────────
+let DIR_DATA = [];
+async function loadDirectory() {
+  const res = await api('get_directory', {}, 'GET');
+  const tbody = document.getElementById('directory-tbody');
+  if (!res.success) return;
+  DIR_DATA = res.data;
+  if (!DIR_DATA.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="5">Chưa có dữ liệu.</td></tr>'; return; }
+  tbody.innerHTML = DIR_DATA.map(d => `<tr>
+    <td><strong>${d.name}</strong><br><small>${d.contact_email}</small></td>
+    <td><span class="badge badge-default">${d.category || '—'}</span></td>
+    <td>${statusBadge(d.status)}</td>
+    <td>
+      <div class="action-group">
+        <button class="btn-xs btn-xs-ghost" onclick="editDir(${d.id})">Sửa</button>
+        <button class="btn-xs btn-xs-danger" onclick="deleteDir(${d.id})">Xóa</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+window.editDir = (id) => {
+  const d = DIR_DATA.find(x => x.id == id);
+  if(!d) return;
+  document.getElementById('dir-edit-id').value = d.id;
+  document.getElementById('dir-name').value = d.name;
+  document.getElementById('dir-short').value = d.short_name || '';
+  document.getElementById('dir-cat').value = d.category || '';
+  document.getElementById('dir-email').value = d.contact_email || '';
+  document.getElementById('dir-web').value = d.website || '';
+  document.getElementById('dir-status').value = d.status;
+  document.getElementById('dir-form-title').textContent = '✏️ Sửa hội viên';
+  document.getElementById('btn-cancel-dir').style.display = 'inline-block';
+  document.getElementById('panel-directory').scrollIntoView();
+};
+window.resetDirForm = () => {
+  document.getElementById('dir-edit-id').value = '';
+  document.getElementById('dir-name').value = '';
+  document.getElementById('dir-short').value = '';
+  document.getElementById('dir-cat').value = '';
+  document.getElementById('dir-email').value = '';
+  document.getElementById('dir-web').value = '';
+  if(document.getElementById('dir-logo')) document.getElementById('dir-logo').value = '';
+  document.getElementById('dir-status').value = 'active';
+  document.getElementById('dir-form-title').textContent = '➕ Thêm hội viên';
+  document.getElementById('btn-cancel-dir').style.display = 'none';
+};
+window.saveDir = async () => {
+  const data = {
+    id: document.getElementById('dir-edit-id').value,
+    name: document.getElementById('dir-name').value,
+    short: document.getElementById('dir-short').value,
+    cat: document.getElementById('dir-cat').value,
+    email: document.getElementById('dir-email').value,
+    web: document.getElementById('dir-web').value,
+    status: document.getElementById('dir-status').value
+  };
+  const logoInput = document.getElementById('dir-logo');
+  if (logoInput && logoInput.files.length > 0) {
+    data.logo = logoInput.files[0];
+  }
+  if(!data.name || !data.email) { notify('Nhập đủ tên và email.', false); return; }
+  const r = await api(data.id ? 'edit_dir' : 'create_dir', data);
+  notify(r.message || 'Đã lưu', r.success);
+  if(r.success) { resetDirForm(); loadDirectory(); }
+};
+window.deleteDir = async (id) => {
+  if(!confirm('Xóa hội viên này?')) return;
+  const r = await api('delete_dir', { id });
+  notify(r.message, r.success);
+  if(r.success) loadDirectory();
+};
+
+// ── EVENTS ──────────────────────────────────────────────────
+let EV_DATA = [];
+async function loadEvents() {
+  const res = await api('get_events', {}, 'GET');
+  const tbody = document.getElementById('events-tbody');
+  if (!res.success) return;
+  EV_DATA = res.data;
+  if (!EV_DATA.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="5">Chưa có sự kiện.</td></tr>'; return; }
+  tbody.innerHTML = EV_DATA.map(e => `<tr>
+    <td><strong>${e.title}</strong></td>
+    <td>${e.date}</td>
+    <td>${e.location || '—'}</td>
+    <td>${statusBadge(e.status)}</td>
+    <td>
+      <div class="action-group">
+        <button class="btn-xs btn-xs-ghost" onclick="editEvent(${e.id})">Sửa</button>
+        <button class="btn-xs btn-xs-danger" onclick="deleteEvent(${e.id})">Xóa</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+window.editEvent = (id) => {
+  const e = EV_DATA.find(x => x.id == id);
+  if (!e) return;
+  document.getElementById('ev-form-title').textContent = '✏️ Sửa sự kiện';
+  document.getElementById('ev-edit-id').value = e.id;
+  document.getElementById('ev-title').value = e.title;
+  document.getElementById('ev-date').value = e.date;
+  document.getElementById('ev-time').value = e.time || '';
+  document.getElementById('ev-loc').value = e.location || '';
+  document.getElementById('ev-capacity').value = e.capacity || '';
+  document.getElementById('ev-registered').value = e.registered || '0';
+  document.getElementById('ev-desc').value = e.description || '';
+  document.getElementById('ev-status').value = e.status;
+  document.getElementById('ev-link').value = e.registration_link || '';
+  document.getElementById('btn-cancel-ev').style.display = 'inline-block';
+  document.getElementById('panel-events').scrollIntoView();
+};
+window.resetEvForm = () => {
+  document.getElementById('ev-edit-id').value = '';
+  document.getElementById('ev-title').value = '';
+  document.getElementById('ev-date').value = '';
+  document.getElementById('ev-time').value = '';
+  document.getElementById('ev-loc').value = '';
+  document.getElementById('ev-capacity').value = '';
+  document.getElementById('ev-registered').value = '';
+  document.getElementById('ev-desc').value = '';
+  document.getElementById('ev-link').value = '';
+  document.getElementById('ev-status').value = 'upcoming';
+  document.getElementById('ev-form-title').textContent = '➕ Tạo sự kiện';
+  document.getElementById('btn-cancel-ev').style.display = 'none';
+};
+window.saveEvent = async () => {
+  const data = {
+    id: document.getElementById('ev-edit-id').value,
+    title: document.getElementById('ev-title').value,
+    date: document.getElementById('ev-date').value,
+    time: document.getElementById('ev-time').value,
+    loc: document.getElementById('ev-loc').value,
+    capacity: document.getElementById('ev-capacity').value,
+    registered: document.getElementById('ev-registered').value,
+    desc: document.getElementById('ev-desc').value,
+    status: document.getElementById('ev-status').value,
+    link: document.getElementById('ev-link').value
+  };
+  if (!data.title || !data.date) { notify('Nhập đủ tên và ngày.'); return; }
+  const r = await api(data.id ? 'edit_event' : 'create_event', data);
+  notify(r.message, r.success);
+  if (r.success) { resetEvForm(); loadEvents(); }
+};
+window.deleteEvent = async (id) => {
+  if(!confirm('Xóa sự kiện này?')) return;
+  const r = await api('delete_event', { id });
+  notify(r.message, r.success);
+  if(r.success) loadEvents();
+};
+
+// ── DOCS ──────────────────────────────────────────────────
+let DOC_DATA = [];
+async function loadDocs() {
+  const res = await api('get_docs', {}, 'GET');
+  const tbody = document.getElementById('docs-tbody');
+  if (!res.success) return;
+  DOC_DATA = res.data;
+  if (!DOC_DATA.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="5">Chưa có tài liệu.</td></tr>'; return; }
+  tbody.innerHTML = DOC_DATA.map(d => `<tr>
+    <td><strong>${d.title}</strong></td>
+    <td><span class="badge badge-blue">${d.category || '—'}</span></td>
+    <td>${statusBadge(d.access_level)}</td>
+    <td>
+      <div class="action-group">
+        <button class="btn-xs btn-xs-ghost" onclick="editDoc(${d.id})">Sửa</button>
+        <button class="btn-xs btn-xs-danger" onclick="deleteDoc(${d.id})">Xóa</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+window.editDoc = (id) => {
+  const d = DOC_DATA.find(x => x.id == id);
+  if(!d) return;
+  document.getElementById('doc-edit-id').value = d.id;
+  document.getElementById('doc-title').value = d.title;
+  document.getElementById('doc-cat').value = d.category || '';
+  document.getElementById('doc-url').value = d.file_url || '';
+  document.getElementById('doc-access').value = d.access_level;
+  document.getElementById('doc-form-title').textContent = '✏️ Sửa tài liệu';
+  document.getElementById('btn-cancel-doc').style.display = 'inline-block';
+  document.getElementById('panel-docs').scrollIntoView();
+};
+window.resetDocForm = () => {
+  document.getElementById('doc-edit-id').value = '';
+  document.getElementById('doc-title').value = '';
+  document.getElementById('doc-cat').value = 'Quy định - Pháp lý';
+  document.getElementById('doc-url').value = '';
+  document.getElementById('doc-access').value = 'public';
+  document.getElementById('doc-form-title').textContent = '➕ Thêm tài liệu';
+  document.getElementById('btn-cancel-doc').style.display = 'none';
+};
+window.saveDoc = async () => {
+  const data = {
+    id: document.getElementById('doc-edit-id').value,
+    title: document.getElementById('doc-title').value,
+    cat: document.getElementById('doc-cat').value,
+    url: document.getElementById('doc-url').value,
+    access: document.getElementById('doc-access').value
+  };
+  if(!data.title || !data.url) { notify('Nhập đủ tên và đường dẫn.', false); return; }
+  const r = await api(data.id ? 'edit_doc' : 'create_doc', data);
+  notify(r.message, r.success);
+  if(r.success) { resetDocForm(); loadDocs(); }
+};
+window.deleteDoc = async (id) => {
+  if(!confirm('Xóa tài liệu này?')) return;
+  const r = await api('delete_doc', { id });
+  notify(r.message, r.success);
+  if(r.success) loadDocs();
+};
+
+
+checkAdminSession();
+</script>
 </body>
 </html>

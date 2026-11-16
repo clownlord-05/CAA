@@ -1,0 +1,5 @@
+# Local scratch / migration / recovery scripts
+scratch_*
+assets/js/app_recovered.js
+.DS_Store
+Thumbs.db

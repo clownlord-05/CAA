@@ -30,6 +30,7 @@
       "description": "Tổ chức kết nối cộng đồng doanh nghiệp quảng cáo tại Thủ đô."
     }
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body data-role="guest">
 
@@ -56,7 +57,10 @@
       <!-- Nav End -->
       <div class="nav-end">
         <button class="search-btn btn btn-ghost btn-icon" type="button" aria-label="Tìm kiếm" data-open-search>🔍</button>
-        <button class="login-btn btn btn-ghost btn-sm" type="button" data-open-login>Đăng nhập</button>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+              <button class="login-btn btn btn-ghost btn-sm" type="button" data-open-login>Đăng nhập</button>
+              <button type="button" class="btn btn-ghost btn-sm" data-logout style="display:none;">Đăng xuất</button>
+            </div>
         <a class="btn btn-primary btn-sm join-btn" href="join.html">Gia nhập CAA</a>
         <button class="mobile-toggle btn btn-ghost btn-icon" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-drawer">☰</button>
       </div>
@@ -429,18 +433,18 @@
     </div>
     
     <!-- VIEW: LOGIN -->
-    <form id="view-login" class="auth-view active">
+    <form id="view-login" autocomplete="off" class="auth-view active">
       <h2>Chào mừng trở lại.</h2>
       <p>Đăng nhập bằng tài khoản hội viên để truy cập cổng thông tin nội bộ CAA.</p>
       
       <div style="display: flex; flex-direction: column; gap: var(--s-md); margin-block: var(--s-lg);">
         <label class="field">
           <span style="font-weight: 600;">Email</span>
-          <input type="email" id="login-email" placeholder="hoivien@congty.vn" required class="field-input" />
+          <input type="email" id="login-email" autocomplete="off" placeholder="hoivien@congty.vn" required class="field-input" />
         </label>
         <label class="field">
           <span style="font-weight: 600;">Mật khẩu</span>
-          <input type="password" id="login-pass" required class="field-input" />
+          <input type="password" id="login-pass" autocomplete="new-password" required class="field-input" />
         </label>
       </div>
       
@@ -451,28 +455,21 @@
         <a href="#" class="auth-link" data-goto="register">Chưa có tài khoản? Đăng ký</a>
       </div>
       
-      <div style="margin-top: var(--s-lg); padding-top: var(--s-md); border-top: 1px dashed var(--c-border); text-align: center;">
-        <p style="font-size: var(--t-xs); color: var(--c-ink-3); margin-bottom: var(--s-xs);">[Mô phỏng phân quyền nhanh]</p>
-        <div style="display: flex; gap: var(--s-xs); justify-content: center; flex-wrap: wrap;">
-          <button type="button" class="btn btn-ghost btn-sm" data-set-role="guest">Khách</button>
-          <button type="button" class="btn btn-ghost btn-sm" data-set-role="member">Hội viên</button>
-          
-        </div>
-      </div>
+      
     </form>
 
     <!-- VIEW: REGISTER -->
-    <form id="view-register" class="auth-view" style="display:none;">
+    <form id="view-register" autocomplete="off" class="auth-view" style="display:none;">
       <h2>Tạo tài khoản.</h2>
       <p>Đăng ký tài khoản bằng Email doanh nghiệp.</p>
       <div style="display: flex; flex-direction: column; gap: var(--s-md); margin-block: var(--s-lg);">
         <label class="field">
           <span style="font-weight: 600;">Email</span>
-          <input type="email" id="reg-email" required class="field-input" placeholder="email@congty.vn" />
+          <input type="email" id="reg-email" autocomplete="off" required class="field-input" placeholder="email@congty.vn" />
         </label>
         <label class="field">
           <span style="font-weight: 600;">Mật khẩu</span>
-          <input type="password" required minlength="6" class="field-input" placeholder="Tối thiểu 6 ký tự" />
+          <input type="password" required minlength="6" autocomplete="new-password" class="field-input" placeholder="Tối thiểu 6 ký tự" />
         </label>
       </div>
       <button type="submit" class="btn btn-primary btn-wide" style="justify-content: center;">Tạo tài khoản</button>
@@ -482,13 +479,13 @@
     </form>
 
     <!-- VIEW: FORGOT PASSWORD -->
-    <form id="view-forgot" class="auth-view" style="display:none;">
+    <form id="view-forgot" autocomplete="off" class="auth-view" style="display:none;">
       <h2>Quên mật khẩu.</h2>
       <p>Nhập email để nhận mã xác minh (OTP) đặt lại mật khẩu.</p>
       <div style="display: flex; flex-direction: column; gap: var(--s-md); margin-block: var(--s-lg);">
         <label class="field">
           <span style="font-weight: 600;">Email</span>
-          <input type="email" id="forgot-email" required class="field-input" />
+          <input type="email" id="forgot-email" autocomplete="off" required class="field-input" />
         </label>
       </div>
       <button type="submit" class="btn btn-primary btn-wide" style="justify-content: center;">Nhận mã xác minh</button>
@@ -500,16 +497,16 @@
     <!-- VIEW: OTP VERIFICATION -->
     <form id="view-otp" class="auth-view" style="display:none;">
       <h2>Kiểm tra Hộp thư.</h2>
-      <p>Hệ thống đã gửi một <strong>Liên kết xác thực bảo mật</strong> đến <strong id="otp-target-email">email</strong>.<br><br>Vui lòng mở hộp thư, bấm vào link để kích hoạt tài khoản, sau đó quay lại đây.</p>
+      <p>Hệ thống đã gửi một <strong>Mã xác thực (OTP)</strong> đến <strong id="otp-target-email">email</strong>.<br><br>Vui lòng mở hộp thư và nhập mã OTP gồm 6 chữ số vào ô bên dưới để kích hoạt.<br><br><span style="color:var(--c-red); font-size: 0.95em;"><strong>Lưu ý:</strong> Nếu không thấy trong Hộp thư đến, vui lòng kiểm tra kỹ trong mục <strong>Thư rác (Spam)</strong>.</span></p>
       <div style="display: flex; flex-direction: column; gap: var(--s-md); margin-block: var(--s-lg);">
-        <label class="field" style="display:none;">
+        <label class="field">
           <span style="font-weight: 600;">Mã xác minh (OTP)</span>
           <input type="text" id="otp-code" required pattern="[0-9]{6}" maxlength="6" inputmode="numeric" class="field-input" placeholder="123456" style="text-align: center; font-size: var(--t-xl); letter-spacing: 0.5em; font-weight: bold;" />
         </label>
         <div id="reset-password-fields" style="display:none; flex-direction: column; gap: var(--s-md);">
           <label class="field">
             <span style="font-weight: 600;">Mật khẩu mới</span>
-            <input type="password" id="reset-pass" class="field-input" />
+            <input type="password" id="reset-pass" autocomplete="new-password" class="field-input" />
           </label>
         </div>
       </div>
@@ -555,7 +552,7 @@
   <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
 
   <script src="assets/js/articles_data.min.js" defer></script>
-  <script src="assets/js/app.min.js" defer></script>
+  <script src="assets/js/app.min.js?v=1794798472106" defer></script>
 
 <!-- Floating Contact Widget -->
 <div class="floating-contact" id="floating-contact">

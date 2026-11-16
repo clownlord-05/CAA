@@ -332,7 +332,7 @@ ul[class], ol[class] { list-style: none; padding: 0; margin: 0; }
 .leader-info { display: flex; flex-direction: column; gap: var(--s-2xs); align-items: center; }
 .leader-name { font-size: var(--t-lg); }
 .leader-org { font-size: var(--t-sm); color: var(--c-ink-2); }
-.leadership-note { margin-top: var(--s-2xl); padding: var(--s-md); background: var(--c-bg); border: var(--border) solid var(--c-gold); border-radius: var(--r-sm); color: #5c3826; font-size: var(--t-sm); text-align: center; }
+
 
 /* ── DIRECTORY ─────────────────────────────────────────── */
 .dir-toolbar { display: flex; flex-wrap: wrap; gap: var(--s-md); margin-bottom: var(--s-2xl); align-items: center; }
